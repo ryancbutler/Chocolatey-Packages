@@ -37,13 +37,13 @@ This is a nuspec. It mostly adheres to https://docs.nuget.org/create/Nuspec-Refe
     <title>Base Image Script Framework</title>
     <authors>Matthias Schlimm</authors>
     <!-- projectUrl is required for the community feed -->
-    <projectUrl>https://github.com/EUCweb/BIS-F/projectUrl>
+    <projectUrl>https://github.com/EUCweb/BIS-F/projectUrl></projectUrl>
     <iconUrl>http://edocs.eucweb.com/wp-content/uploads/2017/09/cropped-cropped-cloud3-1-32x32.jpg</iconUrl>
     <!-- <copyright>2018</copyright> -->
     <!-- If there is a license Url available, it is required for the community feed -->
     <licenseUrl>http://edocs.eucweb.com/</licenseUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
-    <projectSourceUrl>https://github.com/EUCweb/BIS-F</projectSourceUrl>
+    <projectSourceUrl>https://github.com/ryancbutler/Chocolatey-Packages/tree/master/bis-f/</projectSourceUrl>
     <docsUrl>http://edocs.eucweb.com/</docsUrl>
     <!--<mailingListUrl></mailingListUrl>-->
     <!--<bugTrackerUrl></bugTrackerUrl>-->
