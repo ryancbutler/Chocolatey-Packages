@@ -12,6 +12,7 @@ function global:au_GetLatest {
     $version = $url -split '-|.exe' | select -Last 1 -Skip 2
     $string = $url -split "/" | select -Last 1 -Skip 1
     $version = $string.Remove(($string.LastIndexOf(".")),"1")
+    write-host $version
     return @{Version = $version; URL32 = $url}
 }
 

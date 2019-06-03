@@ -1,8 +1,8 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
   <metadata>
     <id>bis-f</id>
-    <version>6.1.0.01103</version>
+    <version>6.1.1.01105</version>
     <title>Base Image Script Framework</title>
     <authors>Matthias Schlimm</authors>
     <projectUrl>https://github.com/EUCweb/BIS-F/</projectUrl>
@@ -14,7 +14,8 @@
     <docsUrl>http://edocs.eucweb.com/</docsUrl>
     <tags>bis-f</tags>
     <summary>The perfect way to seal your Base Image</summary>
-    <description>The Base Image Script Framework (BIS-F) is the perfect way to seal your Base Image. Whatever your environment has run Citrix XenApp, Citrix XenDesktop with PVS or MCS,  Citrix AppLayering, VMware Horizon View, you must prepare your Base Image before you can distribute this Image to multiple devices. If you install your Base Image from scratch or update them with new software, for the sealing process of your Base Image run this framework (preparation), it makes it also unique if you booting up your cloned device (personalization).</description>
+    <description><![CDATA[The Base Image Script Framework (BIS-F) is the perfect way to seal your Base Image. Whatever your environment has run Citrix XenApp, Citrix XenDesktop with PVS or MCS, Citrix AppLayering, VMware Horizon View, you must prepare your Base Image before you can distribute this Image to multiple devices. If you install your Base Image from scratch or update them with new software, for the sealing process of your Base Image run this framework (preparation), it makes it also unique if you booting up your cloned device (personalization).
+]]></description>
   </metadata>
   <files>
     <file src="tools\**" target="tools" />
