@@ -1,12 +1,12 @@
 ﻿Install-ChocolateyZipPackage -PackageName $env:ChocolateyPackageName `
  -Url 'https://aka.ms/fslogix_download' `
- -UnzipLocation $env:TEMP
+ -UnzipLocation "$env:TEMP\fslogix"
 
 $packageArgs = @{
   packageName   = $env:ChocolateyPackageName
   fileType      = 'exe'
-  file = "$env:TEMP\Win32\Release\FSLogixAppsSetup.exe"
-  file64 = "$env:TEMP\x64\Release\FSLogixAppsSetup.exe"
+  file = "$env:TEMP\fslogix\Win32\Release\FSLogixAppsSetup.exe"
+  file64 = "$env:TEMP\fslogix\x64\Release\FSLogixAppsSetup.exe"
   url 			    = 'https://aka.ms/fslogix_download' 	
   softwareName  = 'FSLogixAppsSetup*'
 
@@ -21,3 +21,4 @@ $packageArgs = @{
 }
 
 Install-ChocolateyPackage @packageArgs
+remove-item "$env:TEMP\fslogix\" -Force -Recurse
