@@ -1,6 +1,6 @@
 ﻿$toolsdir = "$env:TEMP\fslogix"
 #Get ZIP
-$ziplocation = Get-ChocolateyWebFile -PackageName 'fslogix' -Url 'https://aka.ms/fslogix_download' -GetOriginalFileName -fileFullPath $toolsdir -checksum "25CBE46B0946E435198E9D1F0306BC41195E44ADC5B1C8BB1C5682E31DD7DC22" -checksumtype "sha256"
+$ziplocation = Get-ChocolateyWebFile -Url 'https://aka.ms/fslogix_download' -GetOriginalFileName -fileFullPath $toolsdir -checksum "25CBE46B0946E435198E9D1F0306BC41195E44ADC5B1C8BB1C5682E31DD7DC22" -checksumtype "sha256"
 
 #Extract
 $extractedlocation = Get-ChocolateyUnzip -FileFullPath $ziplocation -Destination $toolsDir
