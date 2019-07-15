@@ -18,7 +18,7 @@ environment:
   au_test_groups: 1
 
   # Github token to commit pushed packages to repository
-  github_user_repo: '{github_user}/{repository}'
+  github_user_repo: 'ryancbutler/Chocolatey-Packages'
   github_api_key:
     secure: DwoP2pyPXY5WqXA/XQc4mRVvi9WZXY/QUP5ycWBq7enxWMYebC2IeEvPNpHqYUEB #https://ci.appveyor.com/tools/encrypt
 
@@ -34,7 +34,7 @@ environment:
 
   # ID of the gist used to save run results - create a gist under the github_user (secret or not) and grab the id - https://gist.github.com/name/id
   # Optional, leave empty to create anonymous gist
-  gist_id:
+  gist_id: 7b5093c146bccff82f333d93e4a2e65a
 
   # Force test: gist id for test results
   gist_id_test:

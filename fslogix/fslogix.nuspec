@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
   <metadata>
     <id>fslogix</id>
@@ -13,7 +13,7 @@
     <docsUrl>https://docs.microsoft.com/en-us/fslogix/</docsUrl>
     <tags>fslogix</tags>
     <summary>Remote desktops and applications are a critical, and growing, part of the IT strategy for many businesses. A growing number of these environments are non-persistent, requiring a graceful set of tools to manage applications and user profiles. FSLogix tools improve the user experience, and simplify the management of these environments.</summary>
-    <description><![CDATA[Remote desktops and applications are a critical, and growing, part of the IT strategy for many businesses. A growing number of these environments are non-persistent, requiring a graceful set of tools to manage applications and user profiles. FSLogix tools improve the user experience, and simplify the management of these environments.
+    <description><![CDATA[FSLogix is a set of solutions that enhance, enable, and simplify non-persistent Windows computing environments. FSLogix solutions are appropriate for Virtual environments in both public and private clouds. FSLogix solutions may also be used to create more portable computing sessions when using physical devices.
 ]]></description>
     <dependencies>
       <dependency id="KB2919355" version="1.0.20160915" /> <!-- for Win8.1/2012R2 -->

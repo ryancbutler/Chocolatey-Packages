@@ -1,7 +1,7 @@
 ﻿import-module au
 
 function global:au_BeforeUpdate {
-   remove-item -Path "temp" -Force -Recurse
+   #remove-item -Path "temp" -Force -Recurse
 }
 
 function global:au_GetLatest {
