@@ -10,8 +10,7 @@ function global:au_GetLatest {
     $regex   = '.exe$'
     $url     = "https://github.com" + ($download_page.links | ? href -match $regex | select -First 1 -expand href)
     $version = $url -split '-|.exe' | select -Last 1 -Skip 2
-    $string = $url -split "/" | select -Last 1 -Skip 1
-    $version = $string.Remove(($string.LastIndexOf(".")),"1")
+    $version = $url -split "/" | select -Last 1 -Skip 1
     write-host $version
     return @{Version = $version; URL32 = $url}
 }

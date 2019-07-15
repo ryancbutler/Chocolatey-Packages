@@ -15,6 +15,9 @@
     <summary>Remote desktops and applications are a critical, and growing, part of the IT strategy for many businesses. A growing number of these environments are non-persistent, requiring a graceful set of tools to manage applications and user profiles. FSLogix tools improve the user experience, and simplify the management of these environments.</summary>
     <description><![CDATA[Remote desktops and applications are a critical, and growing, part of the IT strategy for many businesses. A growing number of these environments are non-persistent, requiring a graceful set of tools to manage applications and user profiles. FSLogix tools improve the user experience, and simplify the management of these environments.
 ]]></description>
+    <dependencies>
+      <dependency id="KB2919355" version="1.0.20160915" /> <!-- for Win8.1/2012R2 -->
+    </dependencies>
   </metadata>
   <files>
     <file src="tools\**" target="tools" />
