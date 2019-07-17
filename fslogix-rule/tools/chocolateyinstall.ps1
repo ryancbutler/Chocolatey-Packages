@@ -25,6 +25,4 @@ $packageArgs = @{
 }
 
 Install-ChocolateyInstallPackage @packageArgs
-remove-item $ziplocation -Force -Verbose -ErrorAction 0
-remove-item $extractedlocation -Force -Recurse -Verbose -ErrorAction 0
-
+remove-item $toolsDir -Force -Recurse -Verbose -ErrorAction 0
