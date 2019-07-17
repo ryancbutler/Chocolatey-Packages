@@ -2,15 +2,17 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
   <metadata>
     <id>bis-f</id>
-    <version>6.1.2.20190716</version>
+    <version>6.1.2</version>
     <title>Base Image Script Framework</title>
     <authors>Matthias Schlimm</authors>
+    <owners>ryancbutler</owners>
     <projectUrl>https://github.com/EUCweb/BIS-F/</projectUrl>
     <iconUrl>http://edocs.eucweb.com/wp-content/uploads/2017/09/cropped-cropped-cloud3-1-32x32.jpg</iconUrl>
     <copyright>(c) 2017 eucweb.com and Login Consultants</copyright>
     <licenseUrl>https://edocs.eucweb.com/startdocs/base-image-script-framework-bis-f-6-1-0-build-01-102/license-terms/</licenseUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
-    <projectSourceUrl>https://github.com/ryancbutler/Chocolatey-Packages/tree/master/bis-f/</projectSourceUrl>
+    <projectSourceUrl>https://github.com/EUCweb/BIS-F/releases</projectSourceUrl>
+    <packageSourceUrl>https://github.com/ryancbutler/Chocolatey-Packages/tree/master/bis-f/</packageSourceUrl>
     <docsUrl>http://edocs.eucweb.com/</docsUrl>
     <tags>bis-f</tags>
     <summary>The perfect way to seal your Base Image</summary>

@@ -5,6 +5,8 @@ $zipargs = @{
   packageName  = $env:ChocolateyPackageName
   fileFullPath = $toolsdir
   url = 'https://aka.ms/fslogix_download'
+  checksum = "25CBE46B0946E435198E9D1F0306BC41195E44ADC5B1C8BB1C5682E31DD7DC22" 
+  checksumtype = "sha256"
 }
 
 $ziplocation = Get-ChocolateyWebFile @zipargs -GetOriginalFileName
@@ -19,17 +21,11 @@ $packageArgs = @{
   file64 = "$extractedlocation\x64\Release\FSLogixAppsJavaRuleEditorSetup.exe"
   softwareName  = 'FSLogixAppsJavaRuleEditorSetup*'
 
-  checksum      = '9CCD684C243140EB932A066927C7DE0E94500578440808500CA41258D4DA9898'
-  checksumType  = 'sha256'
-
-  checksum64      = '413A5320C5E514A3EFF3F586984DD010FDF432019752E1FD0027B586EED15E9D'
-  checksumType64  = 'sha256'
-
   silentArgs    = "/install /quiet /norestart"
   validExitCodes= @(0, 3010)
 }
 
-Install-ChocolateyPackage @packageArgs
+Install-ChocolateyInstallPackage @packageArgs
 remove-item $ziplocation -Force -Verbose -ErrorAction 0
 remove-item $extractedlocation -Force -Recurse -Verbose -ErrorAction 0
 

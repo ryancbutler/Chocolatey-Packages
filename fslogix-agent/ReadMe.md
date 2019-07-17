@@ -1,3 +1,3 @@
-﻿# FSLogix
+﻿# FSLogix-Agent
 ## Description
-FSLogix is a set of solutions that enhance, enable, and simplify non-persistent Windows computing environments. FSLogix solutions are appropriate for Virtual environments in both public and private clouds. FSLogix solutions may also be used to create more portable computing sessions when using physical devices.
+FSLogix Profiles puts a user’s entire profile into a VHD or VHDX container. This container is typically stored on a file server and attached dynamically as the user logs on. The Windows Search database can also be roamed in the Profile Container. Also, note that roaming the Search Database in a Multi-user environment has specific Windows OS version requirements.  Date / Time stamps are not necessarily updated when VHD writes are complete.

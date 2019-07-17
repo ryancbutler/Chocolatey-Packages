@@ -5,15 +5,17 @@
     <version>2.9.7117.27413</version>
     <title>FSLogix Java Rule Editor</title>
     <authors>Microsoft</authors>
+    <owners>ryancbutler</owners>
     <projectUrl>https://fslogix.com/</projectUrl>
     <copyright>Copyright © FSLogix, Inc.</copyright>
-    <licenseUrl>https://docs.microsoft.com/en-us/fslogix/overview#requirements</licenseUrl>
+    <licenseUrl>https://fslogix.com/images/FSLogix_Production_License_Agreement_v2.pdf</licenseUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
-    <projectSourceUrl>https://github.com/ryancbutler/Chocolatey-Packages/tree/master/fslogix/</projectSourceUrl>
+    <projectSourceUrl>https://docs.microsoft.com/en-us/fslogix/install-ht</projectSourceUrl>
+    <packageSourceUrl>https://github.com/ryancbutler/Chocolatey-Packages/tree/master/fslogix-java/</packageSourceUrl>
     <docsUrl>https://docs.microsoft.com/en-us/fslogix/</docsUrl>
-    <tags>fslogix</tags>
-    <summary>Remote desktops and applications are a critical, and growing, part of the IT strategy for many businesses. A growing number of these environments are non-persistent, requiring a graceful set of tools to manage applications and user profiles. FSLogix tools improve the user experience, and simplify the management of these environments.</summary>
-    <description><![CDATA[FSLogix is a set of solutions that enhance, enable, and simplify non-persistent Windows computing environments. FSLogix solutions are appropriate for Virtual environments in both public and private clouds. FSLogix solutions may also be used to create more portable computing sessions when using physical devices.
+    <tags>fslogix java rule</tags>
+    <summary>FSLogix Apps Java Version Control provides the ability to change the version of Java that is used by Internet Explorer. It also allows certain applications to use a specific version of Java depending on what the program requires.</summary>
+    <description><![CDATA[FSLogix Apps Java Version Control provides the ability to change the version of Java that is used by Internet Explorer. It also allows certain applications to use a specific version of Java depending on what the program requires. 
 ]]></description>
     <dependencies>
       <dependency id="KB2919355" version="1.0.20160915" /> <!-- for Win8.1/2012R2 -->
