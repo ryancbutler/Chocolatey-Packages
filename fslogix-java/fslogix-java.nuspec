@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
   <metadata>
     <id>fslogix-java</id>
-    <version>2.9.7117.27413</version>
+    <version>2.9.7205.27375</version>
     <title>FSLogix Version Control Java Rule Editor</title>
     <authors>Microsoft</authors>
     <owners>ryancbutler</owners>
@@ -15,7 +15,7 @@
     <docsUrl>https://docs.microsoft.com/en-us/fslogix/</docsUrl>
     <tags>fslogix java rule</tags>
     <summary>FSLogix Apps Java Version Control provides the ability to change the version of Java that is used by Internet Explorer. It also allows certain applications to use a specific version of Java depending on what the program requires.</summary>
-    <description><![CDATA[FSLogix Apps Java Version Control provides the ability to change the version of Java that is used by Internet Explorer. It also allows certain applications to use a specific version of Java depending on what the program requires. 
+    <description><![CDATA[FSLogix Apps Java Version Control provides the ability to change the version of Java that is used by Internet Explorer. It also allows certain applications to use a specific version of Java depending on what the program requires.
 ]]></description>
     <dependencies>
       <dependency id="KB2919355" version="1.0.20160915" /> <!-- for Win8.1/2012R2 -->

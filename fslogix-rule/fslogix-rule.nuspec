@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
   <metadata>
-    <id>fslogix-rule-editor</id>
-    <version>2.9.7117.27413</version>
+    <id>fslogix-rule</id>
+    <version>2.9.7205.27375</version>
     <title>FSLogix Apps Rule Editor</title>
     <authors>Microsoft</authors>
     <owners>ryancbutler</owners>
@@ -15,7 +15,7 @@
     <docsUrl>https://docs.microsoft.com/en-us/fslogix/</docsUrl>
     <tags>fslogix rule masking</tags>
     <summary>FSLogix Apps Application masking is used to hide certain applications and all of those programs' components from certain groups, users, and processes. </summary>
-    <description><![CDATA[FFSLogix Apps Application masking is used to hide certain applications and all of those programs' components from certain groups, users, and processes. 
+    <description><![CDATA[FSLogix Apps Application masking is used to hide certain applications and all of those programs' components from certain groups, users, and processes.
 ]]></description>
     <dependencies>
       <dependency id="KB2919355" version="1.0.20160915" /> <!-- for Win8.1/2012R2 -->
