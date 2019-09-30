@@ -20,6 +20,7 @@ function global:au_GetLatest {
 }
 
 function global:au_SearchReplace {
+    write-host $Latest.checksum_zip
     @{
         "tools\chocolateyInstall.ps1" = @{
             "(?i)(^\s*checksum\s*=\s*)('.*')" = "`$1'$($Latest.checksum_zip)'"
