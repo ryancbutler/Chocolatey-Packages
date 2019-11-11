@@ -1,13 +1,18 @@
 ﻿import-module au
 
 function global:au_BeforeUpdate {
-   mkdir temp -Force
-   $url = "https://aka.ms/fslogix_download"
-   Invoke-WebRequest -Uri $url -UseBasicParsing -outfile "temp\fslogix.zip"
-   7z e temp\fslogix.zip -otemp -spf -y
-   $Latest.checksum_zip = Get-FileHash temp\fslogix.zip | ForEach-Object Hash
-   write-host $Latest.checksum_zip
-   remove-item -Path "temp" -Force -Recurse
+    $currentpath = get-location
+    cd ..
+    if (!(test-path "temp"))
+    {
+        mkdir temp -Force
+        $url = "https://aka.ms/fslogix_download"
+        Invoke-WebRequest -Uri $url -UseBasicParsing -outfile "temp\fslogix.zip"
+        7z e temp\fslogix.zip -otemp -spf -y
+        #remove-item -Path "temp" -Force -Recurse
+    }
+    $Latest.checksum_zip = Get-FileHash temp\fslogix.zip | ForEach-Object Hash
+    cd $currentpath.Path
 }
 
 function global:au_GetLatest {
@@ -17,12 +22,13 @@ function global:au_GetLatest {
     $file = $uri2.Headers.Location -split "/" | Select-Object -Last 1
     $file -match "\d+(\.\d+)+"
     $version = $Matches[0]
-    return @{Version = $version; URL32 = $url}
+    return @{Version = $version; URL32 = $uri2.Headers.Location}
 }
 
 function global:au_SearchReplace {
     @{
         "tools\chocolateyInstall.ps1" = @{
+            "(?i)(^\s*url\s*=\s*)('.*')"      = "`$1'$($Latest.URL32)'"
             "(?i)(^\s*checksum\s*=\s*)('.*')" = "`$1'$($Latest.checksum_zip)'"
         }
     }
