@@ -8,6 +8,7 @@
     <owners>ryancbutler</owners>
     <projectUrl>https://fslogix.com/</projectUrl>
     <copyright>Copyright © FSLogix, Inc.</copyright>
+    <iconUrl>https://chocopublic.s3.us-east-2.amazonaws.com/fslogix.jpg</iconUrl>
     <licenseUrl>https://fslogix.com/images/FSLogix_Production_License_Agreement_v2.pdf</licenseUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <projectSourceUrl>https://docs.microsoft.com/en-us/fslogix/install-ht</projectSourceUrl>

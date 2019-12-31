@@ -7,7 +7,7 @@
     <authors>Matthias Schlimm</authors>
     <owners>ryancbutler</owners>
     <projectUrl>https://github.com/EUCweb/BIS-F/</projectUrl>
-    <iconUrl>http://edocs.eucweb.com/wp-content/uploads/2017/09/cropped-cropped-cloud3-1-32x32.jpg</iconUrl>
+    <iconUrl>https://chocopublic.s3.us-east-2.amazonaws.com/bisf_small.jpg</iconUrl>
     <copyright>(c) 2017 eucweb.com and Login Consultants</copyright>
     <licenseUrl>https://edocs.eucweb.com/startdocs/base-image-script-framework-bis-f-6-1-0-build-01-102/license-terms/</licenseUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
