@@ -1,10 +1,10 @@
 ﻿$packageArgs = @{
   packageName   = $env:ChocolateyPackageName
   fileType      = 'EXE'
-  url 			    = 'https://github.com/EUCweb/BIS-F/releases/download/7.1912.0/setup-BIS-F-7.1912.0.exe' 	
+  url 			    = 'https://github.com/EUCweb/BIS-F/releases/download/7.1912.2/setup-BIS-F-7.1912.2.11029.exe' 	
   softwareName  = 'bis-f*'
 
-  checksum      = 'd13544ac931e16af04df923b02a2157c67d8c7adda3a32aa4af15f0b546a11ca'
+  checksum      = '35d1251bd7fbf03dc2ccfdac874db7e862ae352c74dae9430e6a1ae77bdbc7f7'
   checksumType  = 'sha256'
 
   silentArgs    = "/VERYSILENT /NORESTART"
