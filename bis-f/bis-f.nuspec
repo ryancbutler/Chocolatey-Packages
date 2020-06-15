@@ -2,18 +2,18 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
   <metadata>
     <id>bis-f</id>
-    <version>7.1912.2.20200506</version>
+    <version>7.1912.3</version>
     <title>Base Image Script Framework</title>
     <authors>Matthias Schlimm</authors>
     <owners>ryancbutler</owners>
     <projectUrl>https://github.com/EUCweb/BIS-F/</projectUrl>
     <iconUrl>https://chocopublic.s3.us-east-2.amazonaws.com/bisf_small.jpg</iconUrl>
-    <copyright>(c) 2017 eucweb.com and Login Consultants</copyright>
-    <licenseUrl>https://edocs.eucweb.com/startdocs/base-image-script-framework-bis-f-6-1-0-build-01-102/license-terms/</licenseUrl>
+    <copyright>(c) 2020 eucweb.com and Login Consultants</copyright>
+    <licenseUrl>https://github.com/EUCweb/BIS-F/blob/develop/LICENSE</licenseUrl>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <projectSourceUrl>https://github.com/EUCweb/BIS-F/releases</projectSourceUrl>
     <packageSourceUrl>https://github.com/ryancbutler/Chocolatey-Packages/tree/master/bis-f/</packageSourceUrl>
-    <docsUrl>http://edocs.eucweb.com/</docsUrl>
+    <docsUrl>https://eucweb.com/docs</docsUrl>
     <tags>bis-f</tags>
     <summary>The perfect way to seal your Base Image</summary>
     <description><![CDATA[The Base Image Script Framework (BIS-F) is the perfect way to seal your Base Image. Whatever your environment has run Citrix XenApp, Citrix XenDesktop with PVS or MCS, Citrix AppLayering, VMware Horizon View, you must prepare your Base Image before you can distribute this Image to multiple devices. If you install your Base Image from scratch or update them with new software, for the sealing process of your Base Image run this framework (preparation), it makes it also unique if you booting up your cloned device (personalization).
