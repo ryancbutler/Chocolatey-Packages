@@ -1,13 +1,13 @@
 ﻿$packageArgs = @{
   packageName   = $env:ChocolateyPackageName
-  fileType      = 'EXE'
-  url 			    = 'https://github.com/EUCweb/BIS-F/releases/download/7.1912.3/setup-BIS-F-7.1912.3.11036.exe' 	
+  fileType      = 'MSI'
+  url 			    = 'https://github.com/EUCweb/BIS-F/releases/download/7.1912.4/setup-BIS-F-7.1912.4.11038.msi' 	
   softwareName  = 'bis-f*'
 
-  checksum      = 'ee3e60afa6b526b08a21c56304af1a3623d7a28f713463bca2ca7e1e11ca0783'
+  checksum      = '0213cf731f33266a4b94fec1bdeb74d801cd80c9cdcaee7ad679f6f7d145c33e'
   checksumType  = 'sha256'
 
-  silentArgs    = "/qn /norestart"
+  silentArgs    = "/qn /norestart /l*v `"$env:TEMP\chocolatey\$($packageName)\$($packageName).MsiInstall.log`""
   validExitCodes= @(0, 3010, 1641)
 }
 
