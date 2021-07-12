@@ -3,18 +3,24 @@ $url = "https://aka.ms/fslogix_download"
 
 function global:au_BeforeUpdate {
     mkdir temp -Force
-    Invoke-WebRequest -Uri $url -UseBasicParsing -outfile "temp\fslogix.zip" -Verbose
+    Invoke-WebRequest -Uri $url -UseBasicParsing -outfile "temp\fslogix.zip" -Verbose -ErrorAction SilentlyContinue
     $Latest.checksum_zip = Get-FileHash temp\fslogix.zip | ForEach-Object Hash
 
 }
 
 function global:au_GetLatest {
-    $uri = Invoke-WebRequest -MaximumRedirection 0 -Uri $url -ErrorAction SilentlyContinue -UseBasicParsing
-    $uri2 = Invoke-WebRequest -MaximumRedirection 0 -Uri $uri.Headers.Location -ErrorAction SilentlyContinue -UseBasicParsing
-    $file = $uri2.Headers.Location -split "/" | Select-Object -Last 1
+    try {
+        $uri = Invoke-WebRequest -MaximumRedirection 0 -Uri $url -ErrorAction SilentlyContinue -UseBasicParsing
+    }
+    catch {
+        return
+    }
+    #$uri2 = Invoke-WebRequest -MaximumRedirection 0 -Uri $uri.Headers.Location -ErrorAction SilentlyContinue -UseBasicParsing
+    $file = $uri.Headers.Location -split "/" | Select-Object -Last 1
     $file -match "\d+(\.\d+)+"
     $version = $Matches[0]
-    return @{Version = $version; URL32 = $uri2.Headers.Location}
+    write-host $version
+    return @{Version = $version; URL32 = $uri.Headers.Location }
 }
 
 function global:au_SearchReplace {
