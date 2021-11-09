@@ -1,5 +1,5 @@
 ﻿import-module au
-$url = "https://aka.ms/fslogix_download"
+$url = "https://aka.ms/fslogix/download"
 
 function global:au_BeforeUpdate {
     mkdir temp -Force
