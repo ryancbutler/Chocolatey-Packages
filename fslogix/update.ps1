@@ -1,5 +1,6 @@
 ﻿import-module au
-$url = "https://aka.ms/fslogix/download"
+#Leverages Evergreen API to pull data vs hitting Microsoft. Thanks Aaron Parker!
+$url = "https://evergreen-api.stealthpuppy.com/app/MicrosoftFSLogixApps"
 
 function global:au_BeforeUpdate {
     mkdir temp -Force
@@ -10,17 +11,12 @@ function global:au_BeforeUpdate {
 
 function global:au_GetLatest {
     try {
-        $uri = Invoke-WebRequest -MaximumRedirection 0 -Uri $url -ErrorAction SilentlyContinue -UseBasicParsing
+        $response = invoke-restmethod -Uri $url -ErrorAction SilentlyContinue -UseBasicParsing
     }
     catch {
         return
     }
-    #$uri2 = Invoke-WebRequest -MaximumRedirection 0 -Uri $uri.Headers.Location -ErrorAction SilentlyContinue -UseBasicParsing
-    $file = $uri.Headers.Location -split "/" | Select-Object -Last 1
-    $file -match "\d+(\.\d+)+"
-    $version = $Matches[0]
-    write-host $version
-    return @{Version = $version; URL32 = $uri.Headers.Location }
+    return @{Version = $response.Version; URL32 = $response.URI }
 }
 
 function global:au_SearchReplace {
