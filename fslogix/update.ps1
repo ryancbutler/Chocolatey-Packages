@@ -1,10 +1,10 @@
 ﻿import-module au
 #Leverages Evergreen API to pull data vs hitting Microsoft. Thanks Aaron Parker!
 $url = "https://evergreen-api.stealthpuppy.com/app/MicrosoftFSLogixApps"
-
 function global:au_BeforeUpdate {
     mkdir temp -Force
-    Invoke-WebRequest -Uri $url -UseBasicParsing -outfile "temp\fslogix.zip" -Verbose -ErrorAction SilentlyContinue
+    $dl = invoke-restmethod -Uri $url -UseBasicParsing
+    Invoke-WebRequest -Uri $dl.URI -UseBasicParsing -outfile "temp\fslogix.zip" -Verbose
     $Latest.checksum_zip = Get-FileHash temp\fslogix.zip | ForEach-Object Hash
 
 }
