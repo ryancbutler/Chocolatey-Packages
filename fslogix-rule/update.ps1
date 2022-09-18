@@ -3,8 +3,8 @@
 $url = "https://evergreen-api.stealthpuppy.com/app/MicrosoftFSLogixApps"
 function global:au_BeforeUpdate {
     mkdir temp -Force
-    $dl = invoke-restmethod -Uri $url -UseBasicParsing
-    Invoke-WebRequest -Uri $dl.URI -UseBasicParsing -outfile "temp\fslogix.zip" -Verbose
+    $dl = invoke-restmethod -Uri $url -ErrorAction stop -SkipCertificateCheck -SkipHeaderValidation -MaximumRetryCount 3 -RetryIntervalSec 5
+    Invoke-WebRequest -Uri $dl.URI -ErrorAction stop -SkipCertificateCheck -SkipHeaderValidation -MaximumRetryCount 3 -RetryIntervalSec 5 -outfile "temp\fslogix.zip" -Verbose
     $Latest.checksum_zip = Get-FileHash temp\fslogix.zip | ForEach-Object Hash
 
 }

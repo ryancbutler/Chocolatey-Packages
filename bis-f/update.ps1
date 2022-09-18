@@ -7,19 +7,15 @@ function global:au_BeforeUpdate {
 
 function global:au_GetLatest {
     try {
-        $download_page = Invoke-WebRequest -Uri "https://github.com/EUCweb/BIS-F/releases/latest"  -ErrorAction stop -SkipCertificateCheck -SkipHeaderValidation -MaximumRetryCount 3 -RetryIntervalSec 5
+        $download_page = Invoke-RestMethod -Uri "https://api.github.com/repos/EUCweb/BIS-F/releases/latest" -ErrorAction stop -SkipCertificateCheck -SkipHeaderValidation -MaximumRetryCount 3 -RetryIntervalSec 5
     }
     catch {
         return
     }
-    $regex = '.msi$'
-    $url = "https://github.com" + ($download_page.links | ? href -match $regex | select -First 1 -expand href)
-    $version = $url -split '-|.msi' | select -Last 1 -Skip 2
-    $version = $url -split "/" | select -Last 1 -Skip 1
     write-host $version
     return @{
-        Version = $version
-        URL32   = $url 
+        Version = $download_page.tag_name
+        URL32   = $download_page.assets.browser_download_url
     }
 }
 
