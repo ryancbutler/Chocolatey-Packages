@@ -11,7 +11,7 @@ function global:au_BeforeUpdate {
 
 function global:au_GetLatest {
     try {
-        $response = invoke-restmethod -Uri $url -ErrorAction SilentlyContinue -UseBasicParsing
+        $response = invoke-restmethod -Uri $url  -ErrorAction stop -SkipCertificateCheck -SkipHeaderValidation -MaximumRetryCount 3 -RetryIntervalSec 5
     }
     catch {
         return

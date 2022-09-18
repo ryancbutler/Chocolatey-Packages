@@ -6,13 +6,21 @@ function global:au_BeforeUpdate {
 }
 
 function global:au_GetLatest {
-    $download_page = Invoke-WebRequest -Uri "https://github.com/EUCweb/BIS-F/releases/latest" -UseBasicParsing #1
-    $regex   = '.msi$'
-    $url     = "https://github.com" + ($download_page.links | ? href -match $regex | select -First 1 -expand href)
+    try {
+        $download_page = Invoke-WebRequest -Uri "https://github.com/EUCweb/BIS-F/releases/latest"  -ErrorAction stop -SkipCertificateCheck -SkipHeaderValidation -MaximumRetryCount 3 -RetryIntervalSec 5
+    }
+    catch {
+        return
+    }
+    $regex = '.msi$'
+    $url = "https://github.com" + ($download_page.links | ? href -match $regex | select -First 1 -expand href)
     $version = $url -split '-|.msi' | select -Last 1 -Skip 2
     $version = $url -split "/" | select -Last 1 -Skip 1
     write-host $version
-    return @{Version = $version; URL32 = $url}
+    return @{
+        Version = $version
+        URL32   = $url 
+    }
 }
 
 function global:au_SearchReplace {
