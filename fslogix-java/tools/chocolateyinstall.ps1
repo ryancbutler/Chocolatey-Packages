@@ -4,8 +4,8 @@
 $zipargs = @{
   packageName  = $env:ChocolateyPackageName
   fileFullPath = $toolsdir
-  url          = 'https://download.microsoft.com/download/9/7/b/97b4c64b-ffc9-447c-b39e-3afba4672ee8/FSLogix_Apps_2.9.8612.60056.zip'
-  checksum     = '98B70935A88324ED32595164ABF452D6226055180B6A3444CB888BE6E9160A48'
+  url          = 'https://download.microsoft.com/download/1/7/1/17134492-1ef3-420b-a78a-cf13c42d1078/FSLogix_Apps_2.9.8784.63912.zip'
+  checksum     = '772408B5ABDDAD7415DBC711B1E7416481F7A508C542FD2AB6404C16C220CF9F'
   checksumtype = "sha256"
 }
 

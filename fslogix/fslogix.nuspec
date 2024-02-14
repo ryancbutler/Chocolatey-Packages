@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
   <metadata>
     <id>fslogix</id>
-    <version>2.9.8612.6005601</version>
+    <version>2.9.8784.63912</version>
     <title>FSLogix Apps Agent</title>
     <authors>Microsoft</authors>
     <owners>ryancbutler</owners>
@@ -17,7 +17,7 @@
     <tags>fslogix agent container profile</tags>
     <summary>FSLogix Profiles puts a user’s entire profile into a VHD or VHDX container. This container is typically stored on a file server and attached dynamically as the user logs on. The Windows Search database can also be roamed in the Profile Container. Also, note that roaming the Search Database in a Multi-user environment has specific Windows OS version requirements.  Date / Time stamps are not necessarily updated when VHD writes are complete.</summary>
     <description><![CDATA[FSLogix Profiles puts a user’s entire profile into a VHD or VHDX container. This container is typically stored on a file server and attached dynamically as the user logs on. The Windows Search database can also be roamed in the Profile Container. Also, note that roaming the Search Database in a Multi-user environment has specific Windows OS version requirements.  Date / Time stamps are not necessarily updated when VHD writes are complete.
-]]>    </description>
+]]></description>
     <dependencies>
       <dependency id="KB2919355" version="1.0.20160915" />
       <!-- for Win8.1/2012R2 -->
