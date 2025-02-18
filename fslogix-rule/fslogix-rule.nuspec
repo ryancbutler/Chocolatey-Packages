@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2015/06/nuspec.xsd">
   <metadata>
     <id>fslogix-rule</id>
-    <version>2.9.8612.6005601</version>
+    <version>3.25.202.4223</version>
     <title>FSLogix Apps Rule Editor</title>
     <authors>Microsoft</authors>
     <owners>ryancbutler</owners>
