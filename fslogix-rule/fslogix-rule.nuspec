@@ -17,7 +17,7 @@
     <tags>fslogix rule masking</tags>
     <summary>FSLogix Apps Application masking is used to hide certain applications and all of those programs' components from certain groups, users, and processes. </summary>
     <description><![CDATA[FSLogix Apps Application masking is used to hide certain applications and all of those programs' components from certain groups, users, and processes.
-]]>    </description>
+]]></description>
     <dependencies>
       <dependency id="KB2919355" version="1.0.20160915" />
       <!-- for Win8.1/2012R2 -->
