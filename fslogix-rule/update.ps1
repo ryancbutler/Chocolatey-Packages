@@ -1,15 +1,32 @@
-﻿import-module au
+﻿if ($PSVersionTable.PSEdition -eq 'Core') {
+    $winPs = Join-Path $env:WINDIR 'System32\WindowsPowerShell\v1.0\powershell.exe'
+    if (-not (Test-Path $winPs)) {
+        throw 'Windows PowerShell 5.1 is required for this AU script, but powershell.exe was not found.'
+    }
 
-$body = Invoke-WebRequest "https://learn.microsoft.com/en-us/fslogix/overview-release-notes"
+    & $winPs -NoProfile -ExecutionPolicy Bypass -File $PSCommandPath @args
+    exit $LASTEXITCODE
+}
+
+import-module au
+
+$body = Invoke-WebRequest "https://learn.microsoft.com/en-us/fslogix/overview-release-notes" -UseBasicParsing
 $foundversion =@()
 foreach ($link in $body.Links|where-object {$_.'data-linktype' -eq "external"}) {
-    if($link.outerHTML  -match '\(([^\)]+)\)')
+    if($link.outerHTML  -match '\((\d+(?:\.\d+){1,3})\)')
     {
-        $foundversion += [PSCustomObject]@{
-            version = [version]$matches[1]
-            url = $link.href
+        $parsedVersion = $null
+        if ([version]::TryParse($matches[1], [ref]$parsedVersion)) {
+            $foundversion += [PSCustomObject]@{
+                version = $parsedVersion
+                url = $link.href
+            }
         }
 }
+}
+
+if (-not $foundversion) {
+    throw "No valid FSLogix version links were found on the release notes page."
 }
 
 $recent = $foundversion|sort-object version -Descending|Select-Object -First 1
