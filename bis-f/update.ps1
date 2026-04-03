@@ -1,4 +1,14 @@
-﻿import-module au
+﻿if ($PSVersionTable.PSEdition -eq 'Core') {
+    $winPs = Join-Path $env:WINDIR 'System32\WindowsPowerShell\v1.0\powershell.exe'
+    if (-not (Test-Path $winPs)) {
+        throw 'Windows PowerShell 5.1 is required for this AU script, but powershell.exe was not found.'
+    }
+
+    & $winPs -NoProfile -ExecutionPolicy Bypass -File $PSCommandPath @args
+    exit $LASTEXITCODE
+}
+
+import-module au
 
 function global:au_BeforeUpdate {
     #$Latest.Checksum32 = Get-RemoteChecksum $Latest.URL32 
@@ -7,15 +17,27 @@ function global:au_BeforeUpdate {
 
 function global:au_GetLatest {
     try {
-        $download_page = Invoke-RestMethod -Uri "https://api.github.com/repos/EUCweb/BIS-F/releases/latest" -ErrorAction stop -SkipCertificateCheck -SkipHeaderValidation -MaximumRetryCount 3 -RetryIntervalSec 5
+        $headers = @{
+            'User-Agent' = 'chocolatey-au-update-script'
+            'Accept'     = 'application/vnd.github+json'
+        }
+        $downloadPage = Invoke-RestMethod -Uri 'https://api.github.com/repos/EUCweb/BIS-F/releases/latest' -Headers $headers -ErrorAction Stop
     }
     catch {
-        return
+        throw "Unable to fetch latest BIS-F release metadata from GitHub. $($_.Exception.Message)"
     }
-    write-host $version
+
+    $msiAsset = $downloadPage.assets | Where-Object { $_.browser_download_url -match '\.msi$' } | Select-Object -First 1
+    if (-not $msiAsset) {
+        throw 'GitHub latest release does not contain an MSI asset.'
+    }
+
+    $version = [string]$downloadPage.tag_name
+    $version = $version.TrimStart('v')
+
     return @{
-        Version = $download_page.tag_name
-        URL32   = $download_page.assets.browser_download_url
+        Version = $version
+        URL32   = $msiAsset.browser_download_url
     }
 }
 
