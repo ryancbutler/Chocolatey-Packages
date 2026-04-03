@@ -3,6 +3,7 @@
 param( [string[]] $Name, [string] $Root = "$PSScriptRoot" )
 
 if (Test-Path $PSScriptRoot/update_vars.ps1) { . $PSScriptRoot/update_vars.ps1 }
+$skipGist = $Env:au_skip_gist -eq 'true'
 $global:au_root = Resolve-Path $Root
 
 if (($Name.Length -gt 0) -and ($Name[0] -match '^random (.+)')) {
@@ -54,11 +55,13 @@ $options = [ordered]@{
             Github_UserRepo = $Env:github_user_repo         #  Markdown: shows user info in upper right corner
             NoAppVeyor  = $true                             #  Markdown: do not show AppVeyor build shield
             Title       = "Update Force Test - Group ${n}"
-            UserMessage = "[Ignored](#ignored) | [Update report](https://gist.github.com/$Env:gist_id)"       #  Markdown, Text: Custom user message to show
+            UserMessage = "[Ignored](#ignored)"       #  Markdown, Text: Custom user message to show
         }
     }
+}
 
-    Gist = @{
+if (-not $skipGist) {
+    $options.Gist = @{
         Id     = $Env:gist_id_test                          #Your gist id; leave empty for new private or anonymous gist
         ApiKey = $Env:github_api_key                        #Your github api key - if empty anoymous gist is created
         Path   = "$PSScriptRoot\Update-Force-Test-${n}.md"  #List of files to add to the gist

@@ -1,0 +1,175 @@
+name: AU Package Update
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  schedule:
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Run mode"
+        type: choice
+        required: true
+        default: full
+        options:
+          - full
+          - test
+      forced_packages:
+        description: "Optional forced package list for full mode (e.g. fslogix bis-f)"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: au-update-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  au_version: ""
+  au_push: "true"
+  au_skip_gist: "true"
+  au_test_groups: "1"
+  github_user_repo: "ryancbutler/Chocolatey-Packages"
+  github_api_key: ${{ github.token }}
+  api_key: ${{ secrets.CHOCOLATEY_API_KEY }}
+
+jobs:
+  update:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Init Git Config
+        shell: pwsh
+        run: |
+          git config --global user.email "ryan@ryancbutler.com"
+          git config --global user.name "RyanCButler"
+          git config --global core.safecrlf false
+
+      - name: Build Environment Info
+        shell: pwsh
+        run: |
+          Get-CimInstance win32_operatingsystem -Property Caption, OSArchitecture, Version | Format-List Caption, OSArchitecture, Version
+          $PSVersionTable
+          git --version
+          choco --version
+
+      - name: Install AU Module
+        shell: pwsh
+        run: |
+          git clone -q https://github.com/majkinetor/au.git $Env:TEMP/au
+          . "$Env:TEMP/au/scripts/Install-AU.ps1" $Env:au_version
+
+      - name: Run Pipeline Logic
+        shell: pwsh
+        env:
+          GH_EVENT_NAME: ${{ github.event_name }}
+          GH_EVENT_ACTION: ${{ github.event.action }}
+          GH_MANUAL_MODE: ${{ github.event.inputs.mode }}
+          GH_MANUAL_FORCED: ${{ github.event.inputs.forced_packages }}
+        run: |
+          $ErrorActionPreference = 'Continue'
+
+          "Build info"
+          '  {0,-20} {1}' -f 'EVENT NAME:', $Env:GH_EVENT_NAME
+          '  {0,-20} {1}' -f 'EVENT ACTION:', $Env:GH_EVENT_ACTION
+          '  {0,-20} {1}' -f 'MANUAL MODE:', $Env:GH_MANUAL_MODE
+
+          function Invoke-PushMode {
+            param([string[]] $Packages)
+
+            if (-not $Packages -or $Packages.Count -eq 0) {
+              Write-Host "No packages supplied for PUSH mode"
+              return
+            }
+
+            Write-Host "PUSHING PACKAGES: $($Packages -join ' ')"
+            foreach ($package in $Packages) {
+              Write-Host ("{0}`n{1}`n" -f ('-' * 60), "PACKAGE: $package")
+              $nuspec = Get-ChildItem -Path . -Recurse -Filter "$package.nuspec" -File | Select-Object -First 1
+              if (-not $nuspec) {
+                Write-Warning "Can't find package '$package'"
+                continue
+              }
+
+              Push-Location $nuspec.Directory.FullName
+              try {
+                if (Test-Path update.ps1) {
+                  ./update.ps1
+                }
+                choco pack
+                Push-Package
+              }
+              finally {
+                Pop-Location
+              }
+            }
+          }
+
+          if ($Env:GH_EVENT_NAME -eq 'pull_request') {
+            Write-Host 'PR build detected. Running test-only mode with publishing disabled.'
+            $Env:au_push = 'false'
+            ./test-all.ps1 "random $Env:au_test_groups"
+          }
+          elseif ($Env:GH_EVENT_NAME -eq 'workflow_dispatch') {
+            if ($Env:GH_MANUAL_MODE -eq 'test') {
+              ./test-all.ps1 "random $Env:au_test_groups"
+            }
+            else {
+              ./update_all.ps1 -ForcedPackages $Env:GH_MANUAL_FORCED
+            }
+          }
+          else {
+            $isScheduled = $Env:GH_EVENT_NAME -eq 'schedule'
+            $isForced = $Env:GH_EVENT_NAME -eq 'workflow_dispatch'
+            $forced = $null
+
+            if (-not $isScheduled -and -not $isForced) {
+              $commitMessage = git log -1 --pretty=%B
+              Write-Host "Commit message: $commitMessage"
+
+              switch -regex ($commitMessage) {
+                '\[AU (.+?)\]' {
+                  $forced = $Matches[1]
+                }
+                '\[PUSH (.+?)\]' {
+                  $packages = $Matches[1] -split ' '
+                  Invoke-PushMode -Packages $packages
+                  return
+                }
+              }
+            }
+
+            ./update_all.ps1 -ForcedPackages $forced
+          }
+
+          $auTempRoot = Join-Path $Env:TEMP 'chocolatey\au'
+          if (Test-Path $auTempRoot) {
+            7z a au_temp.zip "$auTempRoot\*"
+          }
+          else {
+            Write-Host "Skipping au_temp.zip; path not found: $auTempRoot"
+          }
+
+      - name: Upload Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: au-update-${{ github.run_number }}
+          if-no-files-found: warn
+          path: |
+            update_info.xml
+            Update-AUPackages.md
+            Update-Force-Test-*.md
+            au_temp.zip
