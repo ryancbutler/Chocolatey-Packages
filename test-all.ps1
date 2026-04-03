@@ -23,6 +23,38 @@ if (Test-Path $PSScriptRoot/update_vars.ps1) { . $PSScriptRoot/update_vars.ps1 }
 $skipGist = $Env:au_skip_gist -eq 'true'
 $global:au_root = Resolve-Path $Root
 
+function Ensure-AUCommand {
+    param([Parameter(Mandatory = $true)][string] $CommandName)
+
+    if (Get-Command -Name $CommandName -ErrorAction SilentlyContinue) {
+        return
+    }
+
+    foreach ($moduleName in @('AU', 'au')) {
+        try {
+            Import-Module -Name $moduleName -ErrorAction Stop | Out-Null
+            if (Get-Command -Name $CommandName -ErrorAction SilentlyContinue) {
+                return
+            }
+        }
+        catch {
+            # Try next module candidate.
+        }
+    }
+
+    $installScript = Join-Path $Env:TEMP 'au\scripts\Install-AU.ps1'
+    if (Test-Path $installScript) {
+        . $installScript $Env:au_version
+    }
+
+    if (-not (Get-Command -Name $CommandName -ErrorAction SilentlyContinue)) {
+        throw "Required AU command '$CommandName' is not available. Ensure AU is installed and importable in this PowerShell session."
+    }
+}
+
+Ensure-AUCommand -CommandName 'lsau'
+Ensure-AUCommand -CommandName 'updateall'
+
 if (($Name.Length -gt 0) -and ($Name[0] -match '^random (.+)')) {
     [array] $lsau = lsau
 

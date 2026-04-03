@@ -22,6 +22,37 @@ if ($PSVersionTable.PSEdition -eq 'Core' -and $Env:AU_WINPS_BOOTSTRAPPED -ne 'tr
 if (Test-Path $PSScriptRoot/update_vars.ps1) { . $PSScriptRoot/update_vars.ps1 }
 $skipGist = $Env:au_skip_gist -eq 'true'
 
+function Ensure-AUCommand {
+    param([Parameter(Mandatory = $true)][string] $CommandName)
+
+    if (Get-Command -Name $CommandName -ErrorAction SilentlyContinue) {
+        return
+    }
+
+    foreach ($moduleName in @('AU', 'au')) {
+        try {
+            Import-Module -Name $moduleName -ErrorAction Stop | Out-Null
+            if (Get-Command -Name $CommandName -ErrorAction SilentlyContinue) {
+                return
+            }
+        }
+        catch {
+            # Try next module candidate.
+        }
+    }
+
+    $installScript = Join-Path $Env:TEMP 'au\scripts\Install-AU.ps1'
+    if (Test-Path $installScript) {
+        . $installScript $Env:au_version
+    }
+
+    if (-not (Get-Command -Name $CommandName -ErrorAction SilentlyContinue)) {
+        throw "Required AU command '$CommandName' is not available. Ensure AU is installed and importable in this PowerShell session."
+    }
+}
+
+Ensure-AUCommand -CommandName 'updateall'
+
 $Options = [ordered]@{
     WhatIf        = $au_WhatIf                              #Whatif all packages
     Force         = $false                                  #Force all packages
