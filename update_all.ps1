@@ -3,6 +3,7 @@
 param([string[]] $Name, [string] $ForcedPackages, [string] $Root = $PSScriptRoot)
 
 if (Test-Path $PSScriptRoot/update_vars.ps1) { . $PSScriptRoot/update_vars.ps1 }
+$skipGist = $Env:au_skip_gist -eq 'true'
 
 $Options = [ordered]@{
     WhatIf        = $au_WhatIf                              #Whatif all packages
@@ -42,7 +43,7 @@ $Options = [ordered]@{
         Params= @{                                          #Report parameters:
             Github_UserRepo = $Env:github_user_repo         #  Markdown: shows user info in upper right corner
             NoAppVeyor  = $false                            #  Markdown: do not show AppVeyor build shield
-            UserMessage = "[Ignored](#ignored) | [History](#update-history) | [Force Test](https://gist.github.com/$Env:gist_id_test) | [Releases](https://github.com/$Env:github_user_repo/tags)"       #  Markdown, Text: Custom user message to show
+            UserMessage = "[Ignored](#ignored) | [History](#update-history) | [Releases](https://github.com/$Env:github_user_repo/tags)"       #  Markdown, Text: Custom user message to show
             NoIcons     = $false                            #  Markdown: don't show icon
             IconSize    = 32                                #  Markdown: icon size
             Title       = ''                                #  Markdown, Text: TItle of the report, by default 'Update-AUPackages'
@@ -53,12 +54,6 @@ $Options = [ordered]@{
         Lines = 120                                         #Number of lines to show
         Github_UserRepo = $Env:github_user_repo             #User repo to be link to commits
         Path = "$PSScriptRoot\Update-History.md"            #Path where to save history
-    }
-
-    Gist = @{
-        Id     = $Env:gist_id                               #Your gist id; leave empty for new private or anonymous gist
-        ApiKey = $Env:github_api_key                        #Your github api key - if empty anoymous gist is created
-        Path   = "$PSScriptRoot\Update-AUPackages.md", "$PSScriptRoot\Update-History.md"       #List of files to add to the gist
     }
 
     Git = @{
@@ -102,6 +97,14 @@ $Options = [ordered]@{
         $global:au_Force         = $true
         $global:au_IncludeStream = $Matches['stream']
         $global:au_Version       = $Matches['version']
+    }
+}
+
+if (-not $skipGist) {
+    $Options.Gist = @{
+        Id     = $Env:gist_id                               #Your gist id; leave empty for new private or anonymous gist
+        ApiKey = $Env:github_api_key                        #Your github api key - if empty anoymous gist is created
+        Path   = "$PSScriptRoot\Update-AUPackages.md", "$PSScriptRoot\Update-History.md"       #List of files to add to the gist
     }
 }
 
