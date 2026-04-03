@@ -52,13 +52,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Init Git Config
-        shell: pwsh
-        run: |
-          git config --global user.email "ryan@ryancbutler.com"
-          git config --global user.name "RyanCButler"
-          git config --global core.safecrlf false
-
       - name: Build Environment Info
         shell: pwsh
         run: |
@@ -73,7 +66,7 @@ jobs:
           git clone -q https://github.com/majkinetor/au.git $Env:TEMP/au
           . "$Env:TEMP/au/scripts/Install-AU.ps1" $Env:au_version
 
-      - name: Run Pipeline Logic
+      - name: Run Update Check
         shell: pwsh
         env:
           GH_EVENT_NAME: ${{ github.event_name }}
