@@ -33,9 +33,10 @@ concurrency:
 
 env:
   au_version: ""
-  au_push: "true"
+  au_push: "false"
   au_skip_gist: "true"
   au_test_groups: "1"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
   github_user_repo: "ryancbutler/Chocolatey-Packages"
   github_api_key: ${{ github.token }}
   api_key: ${{ secrets.CHOCOLATEY_API_KEY }}
@@ -46,7 +47,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -80,6 +81,7 @@ jobs:
           GH_MANUAL_FORCED: ${{ github.event.inputs.forced_packages }}
         run: |
           $ErrorActionPreference = 'Continue'
+          $Env:au_push = 'false'
 
           "Build info"
           '  {0,-20} {1}' -f 'EVENT NAME:', $Env:GH_EVENT_NAME
@@ -120,17 +122,22 @@ jobs:
           if ($Env:GH_EVENT_NAME -eq 'pull_request') {
             Write-Host 'PR build detected. Running test-only mode with publishing disabled.'
             $Env:au_push = 'false'
+            $Env:au_force = 'false'
             ./test-all.ps1 "random $Env:au_test_groups"
           }
           elseif ($Env:GH_EVENT_NAME -eq 'workflow_dispatch') {
             if ($Env:GH_MANUAL_MODE -eq 'test') {
+              $Env:au_push = 'false'
+              $Env:au_force = 'false'
               ./test-all.ps1 "random $Env:au_test_groups"
             }
             else {
+              $Env:au_push = 'true'
               ./update_all.ps1 -ForcedPackages $Env:GH_MANUAL_FORCED
             }
           }
           else {
+            $Env:au_push = 'true'
             $isScheduled = $Env:GH_EVENT_NAME -eq 'schedule'
             $isForced = $Env:GH_EVENT_NAME -eq 'workflow_dispatch'
             $forced = $null
@@ -164,7 +171,7 @@ jobs:
 
       - name: Upload Artifacts
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: au-update-${{ github.run_number }}
           if-no-files-found: warn

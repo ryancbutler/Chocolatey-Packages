@@ -100,6 +100,14 @@ $Options = [ordered]@{
     }
 }
 
+$isPullRequest = $Env:GITHUB_EVENT_NAME -eq 'pull_request'
+if ($isPullRequest) {
+    # Safety guard: PR runs should never force package updates or publish packages.
+    $ForcedPackages = $null
+    $Options.Push = $false
+    Write-Host 'Pull request context detected. Forced packages and push are disabled.'
+}
+
 if (-not $skipGist) {
     $Options.Gist = @{
         Id     = $Env:gist_id                               #Your gist id; leave empty for new private or anonymous gist

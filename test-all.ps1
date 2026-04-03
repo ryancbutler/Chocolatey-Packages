@@ -20,8 +20,20 @@ if (($Name.Length -gt 0) -and ($Name[0] -match '^random (.+)')) {
     Write-Host ('-'*80)
 }
 
+$isGitHubPr = $Env:GITHUB_EVENT_NAME -eq 'pull_request'
+$isAppVeyorPr = -not [string]::IsNullOrWhiteSpace($Env:APPVEYOR_PULL_REQUEST_NUMBER)
+$disableForceByEnv = $Env:au_force -eq 'false'
+$forceUpdates = -not ($isGitHubPr -or $isAppVeyorPr -or $disableForceByEnv)
+
+if ($forceUpdates) {
+    Write-Host 'Force mode is enabled for test-all run.'
+}
+else {
+    Write-Host 'Force mode is disabled for test-all run (PR or au_force=false).'
+}
+
 $options = [ordered]@{
-    Force   = $true
+    Force   = $forceUpdates
     Push    = $false
     Threads = 10 
 
