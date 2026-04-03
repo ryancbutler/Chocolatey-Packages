@@ -2,6 +2,23 @@
 
 param([string[]] $Name, [string] $ForcedPackages, [string] $Root = $PSScriptRoot)
 
+if ($PSVersionTable.PSEdition -eq 'Core' -and $Env:AU_WINPS_BOOTSTRAPPED -ne 'true') {
+    $winPs = Join-Path $env:WINDIR 'System32\WindowsPowerShell\v1.0\powershell.exe'
+    if (-not (Test-Path $winPs)) {
+        throw 'Windows PowerShell 5.1 is required for this AU script, but powershell.exe was not found.'
+    }
+
+    $prev = $Env:AU_WINPS_BOOTSTRAPPED
+    $Env:AU_WINPS_BOOTSTRAPPED = 'true'
+    try {
+        & $winPs -NoProfile -ExecutionPolicy Bypass -File $PSCommandPath @args
+        exit $LASTEXITCODE
+    }
+    finally {
+        $Env:AU_WINPS_BOOTSTRAPPED = $prev
+    }
+}
+
 if (Test-Path $PSScriptRoot/update_vars.ps1) { . $PSScriptRoot/update_vars.ps1 }
 $skipGist = $Env:au_skip_gist -eq 'true'
 

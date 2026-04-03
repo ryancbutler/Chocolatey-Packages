@@ -34,6 +34,7 @@ concurrency:
 env:
   au_version: ""
   au_push: "false"
+  au_force: "false"
   au_skip_gist: "true"
   au_test_groups: "1"
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
