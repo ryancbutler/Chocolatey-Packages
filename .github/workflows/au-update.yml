@@ -169,6 +169,7 @@ jobs:
         with:
           name: au-update-${{ github.run_number }}
           if-no-files-found: warn
+          retention-days: 7
           path: |
             update_info.xml
             Update-AUPackages.md
