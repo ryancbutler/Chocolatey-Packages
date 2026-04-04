@@ -4,12 +4,12 @@ This repository contains Automated Update (AU) scripts and package definitions u
 
 ## Packages Updated By This Repo
 
-| Package ID | Chocolatey Package | Package Title | What It Provides | Upstream Project |
-| --- | --- | --- | --- | --- |
-| `bis-f` | https://community.chocolatey.org/packages/bis-f | Base Image Script Framework | Image sealing and preparation tooling for Citrix/VMware base images. | https://github.com/EUCweb/BIS-F/ |
-| `fslogix` | https://community.chocolatey.org/packages/fslogix | FSLogix Apps Agent | FSLogix agent for profile and container-based user profile management. | https://fslogix.com/ |
-| `fslogix-java` | https://community.chocolatey.org/packages/fslogix-java | FSLogix Version Control Java Rule Editor | FSLogix Java version control rule editor for app-specific Java version targeting. | https://fslogix.com/ |
-| `fslogix-rule` | https://community.chocolatey.org/packages/fslogix-rule | FSLogix Apps Rule Editor | FSLogix application masking rule editor. | https://fslogix.com/ |
+| Package ID | Active | Chocolatey Package | Package Title | What It Provides | Upstream Project |
+| --- | --- | --- | --- | --- | -- |
+| `bis-f` | ✅ | https://community.chocolatey.org/packages/bis-f | Base Image Script Framework | Image sealing and preparation tooling for Citrix/VMware base images. | https://github.com/EUCweb/BIS-F/ |
+| `fslogix` | ✅ | https://community.chocolatey.org/packages/fslogix | FSLogix Apps Agent | FSLogix agent for profile and container-based user profile management. | https://fslogix.com/ |
+| `fslogix-java` | ❌ | https://community.chocolatey.org/packages/fslogix-java | FSLogix Version Control Java Rule Editor | FSLogix Java version control rule editor for app-specific Java version targeting. | https://fslogix.com/ |
+| `fslogix-rule` | ✅ |  https://community.chocolatey.org/packages/fslogix-rule | FSLogix Apps Rule Editor | FSLogix application masking rule editor. | https://fslogix.com/ |
 
 ## Repository Structure
 
