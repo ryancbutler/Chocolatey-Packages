@@ -222,4 +222,122 @@ function Invoke-ChocoPush {
     [pscustomobject]@{ Outcome = $outcome; Output = $safe }
 }
 
-Export-ModuleMember -Function Get-NuspecVersion, Get-NuspecId, Set-NuspecVersion, Test-VersionIsNewer, Get-DefaultReplacements, Update-PackageFile, Get-UrlChecksum, Clear-UrlChecksumCache, Invoke-WithRetry, Invoke-ChocoPack, Get-ChocoPushArgs, Test-DuplicateVersionOutput, Invoke-ChocoPush
+function Get-ChocoPackage {
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][string] $Root)
+
+    Get-ChildItem -LiteralPath $Root -Directory | ForEach-Object {
+        $updateScript = Join-Path $_.FullName 'update.ps1'
+        $nuspec = Get-ChildItem -LiteralPath $_.FullName -Filter '*.nuspec' -File | Select-Object -First 1
+        if ((Test-Path -LiteralPath $updateScript -PathType Leaf) -and $nuspec) {
+            [pscustomobject]@{
+                Name         = $_.Name
+                Path         = $_.FullName
+                NuspecPath   = $nuspec.FullName
+                UpdateScript = $updateScript
+            }
+        }
+    } | Sort-Object Name
+}
+
+function Get-OptionalProperty {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)] $InputObject,
+        [Parameter(Mandatory)][string] $Name,
+        $Default = $null
+    )
+
+    $property = $InputObject.PSObject.Properties[$Name]
+    if ($property -and $null -ne $property.Value) { $property.Value } else { $Default }
+}
+
+function Invoke-PackageUpdate {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)] $Package,
+        [Parameter(Mandatory)][string] $ArtifactDirectory,
+        [string] $Source = 'https://push.chocolatey.org',
+        [string] $ApiKey = $env:api_key,
+        [int]    $DetectAttempts = 3,
+        [int]    $DetectDelaySeconds = 15,
+        [switch] $Force,
+        [switch] $CheckOnly,
+        [switch] $NoPush
+    )
+
+    $result = [pscustomobject]@{
+        Name            = $Package.Name
+        CurrentVersion  = $null
+        DetectedVersion = $null
+        Outcome         = 'failed'
+        ChangedFiles    = @()
+        Error           = $null
+        Output          = ''
+    }
+
+    try {
+        $result.CurrentVersion = Get-NuspecVersion -Path $Package.NuspecPath
+
+        $detected = Invoke-WithRetry -ScriptBlock { & $Package.UpdateScript } -Attempts $DetectAttempts -DelaySeconds $DetectDelaySeconds | Select-Object -Last 1
+        if (-not $detected) { throw "'$($Package.Name)' update script returned nothing." }
+
+        foreach ($required in @('Version', 'Url', 'Checksum')) {
+            if ([string]::IsNullOrWhiteSpace((Get-OptionalProperty -InputObject $detected -Name $required))) {
+                throw "'$($Package.Name)' update script did not return a non-empty '$required'."
+            }
+        }
+        $result.DetectedVersion = $detected.Version
+
+        if (-not $Force -and -not (Test-VersionIsNewer -Candidate $detected.Version -Current $result.CurrentVersion)) {
+            $result.Outcome = 'no change'
+            return $result
+        }
+
+        if ($CheckOnly) {
+            $result.Outcome = 'checked'
+            return $result
+        }
+
+        $installRelative = Get-OptionalProperty -InputObject $detected -Name 'InstallScript' -Default 'tools\chocolateyinstall.ps1'
+        $installPath = Join-Path $Package.Path $installRelative
+        $replacements = Get-OptionalProperty -InputObject $detected -Name 'Replace' `
+            -Default (Get-DefaultReplacements -Url $detected.Url -Checksum $detected.Checksum)
+
+        Update-PackageFile -Path $installPath -Replacements $replacements
+        Set-NuspecVersion -Path $Package.NuspecPath -Version $detected.Version
+        $result.ChangedFiles = @(
+            (Resolve-Path -LiteralPath $installPath).ProviderPath
+            (Resolve-Path -LiteralPath $Package.NuspecPath).ProviderPath
+        )
+
+        $nupkg = Invoke-ChocoPack -NuspecPath $Package.NuspecPath -OutputDirectory $ArtifactDirectory
+
+        if ($NoPush) {
+            $result.Outcome = 'packed'
+            return $result
+        }
+
+        $push = $null
+        for ($attempt = 1; $attempt -le 3; $attempt++) {
+            $push = Invoke-ChocoPush -NupkgPath $nupkg -Source $Source -ApiKey $ApiKey
+            if ($push.Outcome -ne 'failed') { break }
+            if ($attempt -lt 3) {
+                Write-Host "  push attempt $attempt failed; retrying"
+                Start-Sleep -Seconds 15
+            }
+        }
+
+        $result.Outcome = $push.Outcome
+        $result.Output = $push.Output
+        if ($push.Outcome -eq 'failed') { $result.Error = "choco push failed: $($push.Output)" }
+    }
+    catch {
+        $result.Outcome = 'failed'
+        $result.Error = $_
+    }
+
+    $result
+}
+
+Export-ModuleMember -Function Get-NuspecVersion, Get-NuspecId, Set-NuspecVersion, Test-VersionIsNewer, Get-DefaultReplacements, Update-PackageFile, Get-UrlChecksum, Clear-UrlChecksumCache, Invoke-WithRetry, Invoke-ChocoPack, Get-ChocoPushArgs, Test-DuplicateVersionOutput, Invoke-ChocoPush, Get-ChocoPackage, Get-OptionalProperty, Invoke-PackageUpdate
