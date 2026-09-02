@@ -107,4 +107,119 @@ function Update-PackageFile {
     [System.IO.File]::WriteAllText($resolved, $text, $encoding)
 }
 
-Export-ModuleMember -Function Get-NuspecVersion, Get-NuspecId, Set-NuspecVersion, Test-VersionIsNewer, Get-DefaultReplacements, Update-PackageFile
+$script:ChecksumCache = @{}
+
+function Clear-UrlChecksumCache {
+    [CmdletBinding()]
+    param()
+    $script:ChecksumCache = @{}
+}
+
+function Get-UrlChecksum {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string] $Url,
+        [hashtable] $WebRequestArgs = @{}
+    )
+
+    if ($script:ChecksumCache.ContainsKey($Url)) { return $script:ChecksumCache[$Url] }
+
+    $temp = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
+    try {
+        Invoke-WebRequest -Uri $Url -OutFile $temp -MaximumRetryCount 3 -RetryIntervalSec 5 @WebRequestArgs
+        $hash = (Get-FileHash -LiteralPath $temp -Algorithm SHA256).Hash.ToLowerInvariant()
+    }
+    finally {
+        Remove-Item -LiteralPath $temp -Force -ErrorAction SilentlyContinue
+    }
+
+    $script:ChecksumCache[$Url] = $hash
+    $hash
+}
+
+function Invoke-WithRetry {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][scriptblock] $ScriptBlock,
+        [int] $Attempts = 3,
+        [int] $DelaySeconds = 15
+    )
+
+    for ($i = 1; $i -le $Attempts; $i++) {
+        try { return & $ScriptBlock }
+        catch {
+            if ($i -eq $Attempts) { throw }
+            Write-Host "  attempt $i of $Attempts failed: $($_.Exception.Message)"
+            if ($DelaySeconds -gt 0) { Start-Sleep -Seconds $DelaySeconds }
+        }
+    }
+}
+
+function Invoke-ChocoPack {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string] $NuspecPath,
+        [Parameter(Mandatory)][string] $OutputDirectory
+    )
+
+    New-Item -ItemType Directory -Path $OutputDirectory -Force | Out-Null
+    $resolvedNuspec = (Resolve-Path -LiteralPath $NuspecPath).ProviderPath
+    $resolvedOut = (Resolve-Path -LiteralPath $OutputDirectory).ProviderPath
+
+    $packArgs = @('pack', $resolvedNuspec, '--output-directory', $resolvedOut, '--limit-output')
+    & choco @packArgs
+    if ($LASTEXITCODE -ne 0) { throw "choco pack failed with exit code $LASTEXITCODE" }
+
+    $id = Get-NuspecId -Path $resolvedNuspec
+    $version = Get-NuspecVersion -Path $resolvedNuspec
+    $expected = Join-Path $resolvedOut "$id.$version.nupkg"
+    if (-not (Test-Path -LiteralPath $expected -PathType Leaf)) {
+        throw "choco pack reported success but '$expected' does not exist."
+    }
+    $expected
+}
+
+function Get-ChocoPushArgs {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string] $NupkgPath,
+        [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string] $Source,
+        [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string] $ApiKey
+    )
+
+    foreach ($pair in @(@('NupkgPath', $NupkgPath), @('Source', $Source), @('ApiKey', $ApiKey))) {
+        if ([string]::IsNullOrWhiteSpace($pair[1])) { throw "$($pair[0]) must not be empty." }
+    }
+
+    @('push', $NupkgPath, '--source', $Source, '--api-key', $ApiKey, '--limit-output')
+}
+
+function Test-DuplicateVersionOutput {
+    [CmdletBinding()]
+    param([Parameter(Mandatory)][AllowEmptyString()][string] $Output)
+
+    [bool]($Output -match '(?i)already exists|\(409\)')
+}
+
+function Invoke-ChocoPush {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string] $NupkgPath,
+        [string] $Source = 'https://push.chocolatey.org',
+        [string] $ApiKey = $env:api_key
+    )
+
+    $pushArgs = Get-ChocoPushArgs -NupkgPath $NupkgPath -Source $Source -ApiKey $ApiKey
+    $raw = (& choco @pushArgs 2>&1 | Out-String)
+    $code = $LASTEXITCODE
+    $safe = $raw.Replace($ApiKey, '***')
+
+    $outcome =
+        if ($code -eq 0) { 'pushed' }
+        elseif (Test-DuplicateVersionOutput -Output $safe) { 'already published' }
+        else { 'failed' }
+
+    [pscustomobject]@{ Outcome = $outcome; Output = $safe }
+}
+
+Export-ModuleMember -Function Get-NuspecVersion, Get-NuspecId, Set-NuspecVersion, Test-VersionIsNewer, Get-DefaultReplacements, Update-PackageFile, Get-UrlChecksum, Clear-UrlChecksumCache, Invoke-WithRetry, Invoke-ChocoPack, Get-ChocoPushArgs, Test-DuplicateVersionOutput, Invoke-ChocoPush
