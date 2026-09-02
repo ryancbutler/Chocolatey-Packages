@@ -68,4 +68,43 @@ function Test-VersionIsNewer {
     $c -gt $u
 }
 
-Export-ModuleMember -Function Get-NuspecVersion, Get-NuspecId, Set-NuspecVersion, Test-VersionIsNewer
+function Get-DefaultReplacements {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string] $Url,
+        [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string] $Checksum
+    )
+
+    @{
+        "(?i)(^\s*url\s*=\s*)('.*')"      = "`${1}'$Url'"
+        "(?i)(^\s*checksum\s*=\s*)('.*')" = "`${1}'$Checksum'"
+    }
+}
+
+function Update-PackageFile {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string] $Path,
+        [Parameter(Mandatory)][hashtable] $Replacements
+    )
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Leaf)) { throw "File not found: '$Path'" }
+    $resolved = (Resolve-Path -LiteralPath $Path).ProviderPath
+
+    $bytes = [System.IO.File]::ReadAllBytes($resolved)
+    $hasBom = $bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF
+    $text = [System.IO.File]::ReadAllText($resolved)
+
+    foreach ($pattern in $Replacements.Keys) {
+        $regex = [regex]::new($pattern, [System.Text.RegularExpressions.RegexOptions]::Multiline)
+        if (-not $regex.IsMatch($text)) {
+            throw "Pattern matched nothing in '$resolved': $pattern"
+        }
+        $text = $regex.Replace($text, $Replacements[$pattern])
+    }
+
+    $encoding = New-Object System.Text.UTF8Encoding($hasBom)
+    [System.IO.File]::WriteAllText($resolved, $text, $encoding)
+}
+
+Export-ModuleMember -Function Get-NuspecVersion, Get-NuspecId, Set-NuspecVersion, Test-VersionIsNewer, Get-DefaultReplacements, Update-PackageFile
