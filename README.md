@@ -51,9 +51,9 @@ Requires PowerShell 7 and the Chocolatey CLI.
 # One package only
 ./update-all.ps1 -Name fslogix -CheckOnly
 
-# Bump, pack and commit without publishing
-./update-all.ps1 -NoPush
+# Bump and pack locally without publishing or committing
+./update-all.ps1 -NoPush -NoCommit
 
-# Full run (needs $Env:api_key, or an api_key assignment in update_vars.ps1)
+# Full run (needs $Env:api_key, or an $Env:api_key = '...' assignment in update_vars.ps1)
 ./update-all.ps1
 ```

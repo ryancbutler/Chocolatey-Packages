@@ -75,9 +75,12 @@ function Get-DefaultReplacements {
         [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string] $Checksum
     )
 
+    $escapedUrl = $Url.Replace('$', '$$')
+    $escapedChecksum = $Checksum.Replace('$', '$$')
+
     @{
-        "(?i)(^\s*url\s*=\s*)('.*')"      = "`${1}'$Url'"
-        "(?i)(^\s*checksum\s*=\s*)('.*')" = "`${1}'$Checksum'"
+        "(?i)(^\s*url\s*=\s*)('[^']*')"      = "`${1}'$escapedUrl'"
+        "(?i)(^\s*checksum\s*=\s*)('[^']*')" = "`${1}'$escapedChecksum'"
     }
 }
 
@@ -282,6 +285,7 @@ function Invoke-PackageUpdate {
         CurrentVersion  = $null
         DetectedVersion = $null
         Outcome         = 'failed'
+        Failed          = $true
         ChangedFiles    = @()
         Error           = $null
         Output          = ''
@@ -302,11 +306,13 @@ function Invoke-PackageUpdate {
 
         if (-not $Force -and -not (Test-VersionIsNewer -Candidate $detected.Version -Current $result.CurrentVersion)) {
             $result.Outcome = 'no change'
+            $result.Failed = $false
             return $result
         }
 
         if ($CheckOnly) {
             $result.Outcome = 'checked'
+            $result.Failed = $false
             return $result
         }
 
@@ -326,6 +332,7 @@ function Invoke-PackageUpdate {
 
         if ($NoPush) {
             $result.Outcome = 'packed'
+            $result.Failed = $false
             return $result
         }
 
@@ -342,12 +349,17 @@ function Invoke-PackageUpdate {
         $result.Outcome = $push.Outcome
         $result.Output = $push.Output
         if ($push.Outcome -eq 'failed') {
+            $result.Failed = $true
             $result.Error = "choco push failed: $($push.Output)"
             $result.ChangedFiles = @()
+        }
+        else {
+            $result.Failed = $false
         }
     }
     catch {
         $result.Outcome = 'failed'
+        $result.Failed = $true
         $result.Error = $_
         $result.ChangedFiles = @()
     }

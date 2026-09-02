@@ -26,6 +26,15 @@ Describe 'Package file rewriting' {
             $text | Should -Match ([regex]::Escape("checksum     = 'abc123'"))
         }
 
+        It 'writes a dollar-sign-bearing URL literally instead of treating it as a regex substitution token' {
+            $replacements = Get-DefaultReplacements -Url 'https://x.test/a$1b.zip' -Checksum 'abc123'
+
+            Update-PackageFile -Path $script:FilePath -Replacements $replacements
+
+            $text = [System.IO.File]::ReadAllText($script:FilePath)
+            $text | Should -Match ([regex]::Escape("url          = 'https://x.test/a`$1b.zip'"))
+        }
+
         It 'does not touch the checksumtype line' {
             $replacements = Get-DefaultReplacements -Url 'https://example.test/new.zip' -Checksum 'abc123'
 
@@ -73,7 +82,7 @@ Describe 'Package file rewriting' {
 
         It 'throws when the file does not exist' {
             { Update-PackageFile -Path (Join-Path $script:WorkDir 'missing.ps1') -Replacements @{ 'a' = 'b' } } |
-                Should -Throw
+                Should -Throw -ExpectedMessage '*not found*'
         }
     }
 }

@@ -48,7 +48,7 @@ $results = foreach ($package in $packages) {
 }
 
 $results = @($results)
-$committable = @($results | Where-Object { $_.Outcome -in @('pushed', 'already published', 'packed') -and $_.ChangedFiles })
+$committable = @($results | Where-Object { $_.Outcome -in @('pushed', 'already published') -and $_.ChangedFiles })
 
 if (-not $NoCommit -and -not $CheckOnly -and $committable) {
     # Stage only the files of packages that got as far as a successful pack/push.
@@ -78,7 +78,7 @@ $results | Select-Object Name, CurrentVersion, DetectedVersion, Outcome | Format
 $counts = $results | Group-Object Outcome | ForEach-Object { "$($_.Count) $($_.Name)" }
 Write-Host ($counts -join ', ')
 
-$failed = @($results | Where-Object { $_.Outcome -eq 'failed' })
+$failed = @($results | Where-Object { $_.Failed })
 if ($failed) {
     Write-Host ''
     Write-Host "FAILED: $($failed.Name -join ', ')"

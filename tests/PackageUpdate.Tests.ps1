@@ -90,6 +90,9 @@ Describe 'Package update orchestration' {
             $install | Should -Match ([regex]::Escape("'https://example.test/new.zip'"))
             $install | Should -Match ([regex]::Escape("'newsum'"))
             $result.ChangedFiles.Count | Should -Be 2
+            Should -Invoke -ModuleName ChocoPkg Invoke-ChocoPush -Times 1 -Exactly -ParameterFilter {
+                $NupkgPath -eq (Join-Path $script:ArtifactDir 'fslogix.9.9.9.9.nupkg')
+            }
         }
 
         It 'writes nothing in CheckOnly mode' {
@@ -146,6 +149,28 @@ Describe 'Package update orchestration' {
             $result.Outcome | Should -BeExactly 'failed'
             $result.ChangedFiles.Count | Should -Be 0
             Should -Invoke -ModuleName ChocoPkg Invoke-ChocoPush -Times 3 -Exactly
+        }
+
+        It 'sets Failed to false on a successful push' {
+            New-TestUpdateScript -PackageDir $script:PkgDir -Version '9.9.9.9' -Url 'https://example.test/new.zip' -Checksum 'newsum'
+            $pkg = Get-ChocoPackage -Root $script:Root
+
+            $result = Invoke-PackageUpdate -Package $pkg -ArtifactDirectory $script:ArtifactDir -ApiKey 'KEY'
+
+            $result.Outcome | Should -BeExactly 'pushed'
+            $result.Failed  | Should -Be $false
+        }
+
+        It 'sets Failed to true when push retries are exhausted' {
+            Mock -ModuleName ChocoPkg Invoke-ChocoPush { [pscustomobject]@{ Outcome = 'failed'; Output = 'boom' } }
+            Mock -ModuleName ChocoPkg Start-Sleep { }
+            New-TestUpdateScript -PackageDir $script:PkgDir -Version '9.9.9.9' -Url 'https://example.test/new.zip' -Checksum 'newsum'
+            $pkg = Get-ChocoPackage -Root $script:Root
+
+            $result = Invoke-PackageUpdate -Package $pkg -ArtifactDirectory $script:ArtifactDir -ApiKey 'KEY'
+
+            $result.Outcome | Should -BeExactly 'failed'
+            $result.Failed  | Should -Be $true
         }
 
         It 'records a failure instead of throwing when the update script throws' {
