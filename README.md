@@ -1,6 +1,6 @@
 # Chocolatey Packages
 
-This repository contains Automated Update (AU) scripts and package definitions used to maintain and publish selected Chocolatey packages.
+This repository contains package definitions and update scripts used to maintain and publish selected Chocolatey packages.
 
 ## Packages Updated By This Repo
 
@@ -13,33 +13,47 @@ This repository contains Automated Update (AU) scripts and package definitions u
 
 ## Repository Structure
 
-- `bis-f/`: Chocolatey package files and update script for BIS-F.
-- `fslogix/`: Chocolatey package files and update script for FSLogix Apps Agent.
-- `fslogix-java/`: Chocolatey package files and update script for FSLogix Java Rule Editor.
-- `fslogix-rule/`: Chocolatey package files and update script for FSLogix Rule Editor.
-- `update_all.ps1`: Runs AU update checks across packages.
-- `test-all.ps1`: Runs AU package test/update validation mode.
+- `bis-f/`, `fslogix/`, `fslogix-rule/`: package files and update script per package.
+- `fslogix-java/`: retired; not picked up by the updater.
+- `lib/ChocoPkg.psm1`: nuspec/file rewriting, checksum, pack and push primitives.
+- `lib/Sources.psm1`: upstream release detectors.
+- `update-all.ps1`: the update runner.
+- `run-tests.ps1`: runs the Pester suite in `tests/`.
+
+Each package's `update.ps1` only *detects* a release and returns
+`@{ Version; Url; Checksum }`. The engine compares against the nuspec, rewrites
+`tools/chocolateyinstall.ps1` and the nuspec version, packs, pushes, and commits.
 
 ## Automation
 
-- AU-based update automation is executed by GitHub Actions in `.github/workflows/au-update.yml`.
-- Update reports are generated in files such as `Update-AUPackages.md` and `Update-History.md`.
+`.github/workflows/package-update.yml` runs the Pester suite on every trigger,
+then:
+
+- **pull request** — `update-all.ps1 -CheckOnly` (detects only; writes and
+  publishes nothing).
+- **schedule (04:00 UTC) / push to master** — full run: bump, pack, push, commit.
+- **workflow_dispatch** — `mode: check` or `full`, with optional package names
+  and a force switch.
+
+A run that fails to publish something it should exits non-zero and fails the job.
 
 ## Run Updates Locally
 
-Use Windows PowerShell 5.1 for local runs.
+Requires PowerShell 7 and the Chocolatey CLI.
 
 ```powershell
-# From the repository root
-git clone https://github.com/majkinetor/au.git $Env:TEMP/au
-. "$Env:TEMP/au/scripts/Install-AU.ps1"
+# Run the tests
+./run-tests.ps1
 
-# Full update run
-./update_all.ps1
+# See what would change; writes nothing
+./update-all.ps1 -CheckOnly
 
-# Optional: force selected packages (space-separated)
-./update_all.ps1 -ForcedPackages "fslogix bis-f"
+# One package only
+./update-all.ps1 -Name fslogix -CheckOnly
 
-# Test mode (random group)
-./test-all.ps1 "random 1"
+# Bump, pack and commit without publishing
+./update-all.ps1 -NoPush
+
+# Full run (needs $Env:api_key, or an api_key assignment in update_vars.ps1)
+./update-all.ps1
 ```
