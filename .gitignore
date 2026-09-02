@@ -1,3 +1,4 @@
+artifacts/
 *.nupkg
 *.exe
 update_vars.ps1
