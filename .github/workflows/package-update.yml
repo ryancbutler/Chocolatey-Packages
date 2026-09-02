@@ -1,0 +1,101 @@
+name: Package Update
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  schedule:
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Run mode"
+        type: choice
+        required: true
+        default: check
+        options:
+          - check
+          - full
+      packages:
+        description: "Optional space-separated package names (e.g. fslogix bis-f)"
+        required: false
+        type: string
+      force:
+        description: "Update even when the detected version is not newer"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: package-update-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  api_key: ${{ secrets.CHOCOLATEY_API_KEY }}
+  github_api_key: ${{ github.token }}
+
+jobs:
+  update:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Build environment info
+        shell: pwsh
+        run: |
+          $PSVersionTable | Format-List
+          choco --version
+          (Get-Module Pester -ListAvailable | Sort-Object Version -Descending | Select-Object -First 1).Version
+
+      - name: Run tests
+        shell: pwsh
+        run: ./run-tests.ps1
+
+      - name: Configure git identity
+        shell: pwsh
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+
+      - name: Update packages
+        shell: pwsh
+        env:
+          GH_EVENT_NAME: ${{ github.event_name }}
+          GH_MODE: ${{ inputs.mode }}
+          GH_PACKAGES: ${{ inputs.packages }}
+          GH_FORCE: ${{ inputs.force }}
+        run: |
+          $splat = @{}
+
+          if ($Env:GH_EVENT_NAME -eq 'pull_request') {
+            Write-Host 'Pull request: check-only, nothing is written or published.'
+            $splat.CheckOnly = $true
+          }
+          elseif ($Env:GH_EVENT_NAME -eq 'workflow_dispatch') {
+            if ($Env:GH_MODE -ne 'full') { $splat.CheckOnly = $true }
+            if ($Env:GH_FORCE -eq 'true') { $splat.Force = $true }
+            if (-not [string]::IsNullOrWhiteSpace($Env:GH_PACKAGES)) {
+              $splat.Name = $Env:GH_PACKAGES.Trim() -split '\s+'
+            }
+          }
+
+          ./update-all.ps1 @splat
+
+      - name: Upload built packages
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: packages-${{ github.run_number }}
+          if-no-files-found: ignore
+          retention-days: 7
+          path: artifacts/*.nupkg

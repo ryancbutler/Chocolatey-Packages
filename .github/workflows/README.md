@@ -1,43 +1,38 @@
-# AU Workflow Notes
+# Package Update Workflow Notes
 
 ## Required GitHub Secrets
 
-Create these in repository settings under `Secrets and variables` -> `Actions`.
+Create this in repository settings under `Secrets and variables` -> `Actions`.
 
-- `CHOCOLATEY_API_KEY`: Chocolatey API key used by `Push-Package`.
+- `CHOCOLATEY_API_KEY`: Chocolatey API key used to push packages to
+  `https://push.chocolatey.org`. It reaches the runner as the `api_key`
+  environment variable.
 
-## Optional Repository Variables
+## Other Environment Variables
 
-These defaults are currently hardcoded in `.github/workflows/au-update.yml` for parity:
-
-- `github_user_repo`: `ryancbutler/Chocolatey-Packages`
-- `au_skip_gist`: `true`
-
-If needed, move them to repository variables later.
+- `github_api_key`: set from the run-scoped `${{ github.token }}`. It is used
+  only to raise the GitHub API rate limit when detecting the BIS-F release,
+  not for git operations.
 
 ## Trigger Behavior
 
-- `push` to `master`: runs full logic and supports commit message routing:
-  - `[AU package1 package2]`: forced package updates via `update_all.ps1 -ForcedPackages`.
-  - `[PUSH package1 package2]`: direct package `update.ps1` + `choco pack` + `Push-Package`.
-- `schedule` (daily 04:00 UTC): runs full `update_all.ps1`.
-- `workflow_dispatch`:
-  - `mode=full`: runs `update_all.ps1`.
-  - `mode=test`: runs `test-all.ps1` random grouping.
-- `pull_request` to `master`: test-only mode with publish disabled (`au_push=false`).
+- `pull_request` to `master`: runs `update-all.ps1 -CheckOnly`. This only
+  detects versions; nothing is written or published.
+- `schedule` (daily 04:00 UTC): full run — bump, pack, push, and commit.
+- `push` to `master`: full run — bump, pack, push, and commit.
+- `workflow_dispatch`: manual run with inputs:
+  - `mode`: `check` (detect only, default) or `full` (bump, pack, push, commit).
+  - `packages`: optional space-separated package names to limit the run
+    (e.g. `fslogix bis-f`).
+  - `force`: optional boolean to update even when the detected version is
+    not newer.
+
+The Pester suite (`run-tests.ps1`) runs on every trigger before the update
+step. A run that fails to publish something it should exits non-zero and
+fails the job.
 
 ## Artifacts
 
 Workflow uploads (when present):
 
-- `update_info.xml`
-- `Update-AUPackages.md`
-- `Update-Force-Test-*.md`
-- `au_temp.zip`
-
-## Notes
-
-- GitHub Actions uses the run-scoped `${{ github.token }}` for AU git operations and releases.
-- SMTP email notification env vars are intentionally not set in GitHub Actions.
-- Gist publishing is intentionally disabled in GitHub Actions (`au_skip_gist=true`).
-- Existing AppVeyor file can remain during migration validation; disable AppVeyor in its UI when ready.
+- `artifacts/*.nupkg`
