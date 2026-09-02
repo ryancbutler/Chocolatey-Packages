@@ -1,45 +1,16 @@
-import-module au
+[CmdletBinding()]
+param()
 
-$body = Invoke-WebRequest "https://learn.microsoft.com/en-us/fslogix/overview-release-notes" -UseBasicParsing
-$foundversion =@()
-foreach ($link in $body.Links|where-object {$_.'data-linktype' -eq "external"}) {
-    if($link.outerHTML  -match '\((\d+(?:\.\d+){1,3})\)')
-    {
-        $parsedVersion = $null
-        if ([version]::TryParse($matches[1], [ref]$parsedVersion)) {
-            $foundversion += [PSCustomObject]@{
-                version = $parsedVersion
-                url = $link.href
-            }
-        }
-}
+$release = Get-FsLogixRelease
+
+# The Microsoft download host needs these; without them the request is rejected.
+$webRequestArgs = @{
+    SkipCertificateCheck = $true
+    SkipHeaderValidation = $true
 }
 
-if (-not $foundversion) {
-    throw "No valid FSLogix version links were found on the release notes page."
+[pscustomobject]@{
+    Version  = $release.Version
+    Url      = $release.Url
+    Checksum = Get-UrlChecksum -Url $release.Url -WebRequestArgs $webRequestArgs
 }
-
-$recent = $foundversion|sort-object version -Descending|Select-Object -First 1
-
-function global:au_BeforeUpdate {
-    mkdir temp -Force
-    Invoke-WebRequest -Uri $recent.url -ErrorAction stop -SkipCertificateCheck -SkipHeaderValidation -MaximumRetryCount 3 -RetryIntervalSec 5 -outfile "temp\fslogix.zip" -Verbose
-    $Latest.checksum_zip = Get-FileHash temp\fslogix.zip | ForEach-Object Hash
-
-}
-
-function global:au_GetLatest {
-
-    return @{Version = $recent.version; URL32 = $recent.url }
-}
-
-function global:au_SearchReplace {
-    @{
-        "tools\chocolateyInstall.ps1" = @{
-            "(?i)(^\s*url\s*=\s*)('.*')"      = "`$1'$($Latest.URL32)'"
-            "(?i)(^\s*checksum\s*=\s*)('.*')" = "`$1'$($Latest.checksum_zip)'"
-        }
-    }
-}
-
-update -ChecksumFor none
