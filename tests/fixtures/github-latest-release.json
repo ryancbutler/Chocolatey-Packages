@@ -1,0 +1,7 @@
+{
+  "tag_name": "v7.1912.6",
+  "assets": [
+    { "browser_download_url": "https://github.com/EUCweb/BIS-F/releases/download/7.1912.6/source.zip" },
+    { "browser_download_url": "https://github.com/EUCweb/BIS-F/releases/download/7.1912.6/setup-BIS-F-7.1912.6.11041.MSI" }
+  ]
+}
