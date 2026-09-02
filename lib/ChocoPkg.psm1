@@ -330,11 +330,15 @@ function Invoke-PackageUpdate {
 
         $result.Outcome = $push.Outcome
         $result.Output = $push.Output
-        if ($push.Outcome -eq 'failed') { $result.Error = "choco push failed: $($push.Output)" }
+        if ($push.Outcome -eq 'failed') {
+            $result.Error = "choco push failed: $($push.Output)"
+            $result.ChangedFiles = @()
+        }
     }
     catch {
         $result.Outcome = 'failed'
         $result.Error = $_
+        $result.ChangedFiles = @()
     }
 
     $result

@@ -135,6 +135,19 @@ Describe 'Package update orchestration' {
             $result.ChangedFiles.Count | Should -Be 2
         }
 
+        It 'clears ChangedFiles and reports failed when the push retries are exhausted' {
+            Mock -ModuleName ChocoPkg Invoke-ChocoPush { [pscustomobject]@{ Outcome = 'failed'; Output = 'boom' } }
+            Mock -ModuleName ChocoPkg Start-Sleep { }
+            New-TestUpdateScript -PackageDir $script:PkgDir -Version '9.9.9.9' -Url 'https://example.test/new.zip' -Checksum 'newsum'
+            $pkg = Get-ChocoPackage -Root $script:Root
+
+            $result = Invoke-PackageUpdate -Package $pkg -ArtifactDirectory $script:ArtifactDir -ApiKey 'KEY'
+
+            $result.Outcome | Should -BeExactly 'failed'
+            $result.ChangedFiles.Count | Should -Be 0
+            Should -Invoke -ModuleName ChocoPkg Invoke-ChocoPush -Times 3 -Exactly
+        }
+
         It 'records a failure instead of throwing when the update script throws' {
             Set-Content -LiteralPath (Join-Path $script:PkgDir 'update.ps1') -Value 'throw "upstream unavailable"' -Encoding utf8
             $pkg = Get-ChocoPackage -Root $script:Root
