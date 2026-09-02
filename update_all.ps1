@@ -2,23 +2,6 @@
 
 param([string[]] $Name, [string] $ForcedPackages, [string] $Root = $PSScriptRoot)
 
-if ($PSVersionTable.PSEdition -eq 'Core' -and $Env:AU_WINPS_BOOTSTRAPPED -ne 'true') {
-    $winPs = Join-Path $env:WINDIR 'System32\WindowsPowerShell\v1.0\powershell.exe'
-    if (-not (Test-Path $winPs)) {
-        throw 'Windows PowerShell 5.1 is required for this AU script, but powershell.exe was not found.'
-    }
-
-    $prev = $Env:AU_WINPS_BOOTSTRAPPED
-    $Env:AU_WINPS_BOOTSTRAPPED = 'true'
-    try {
-        & $winPs -NoProfile -ExecutionPolicy Bypass -File $PSCommandPath @args
-        exit $LASTEXITCODE
-    }
-    finally {
-        $Env:AU_WINPS_BOOTSTRAPPED = $prev
-    }
-}
-
 if (Test-Path $PSScriptRoot/update_vars.ps1) { . $PSScriptRoot/update_vars.ps1 }
 $skipGist = $Env:au_skip_gist -eq 'true'
 
@@ -61,7 +44,7 @@ $Options = [ordered]@{
     Threads       = 10                                      #Number of background jobs to use
     Push          = $Env:au_Push -eq 'true'                 #Push to chocolatey
     PushAll       = $true                                   #Allow to push multiple packages at once
-    PluginPath    = ''                                      #Path to user plugins
+    PluginPath    = "$PSScriptRoot\plugins"                  #Path to user plugins
     IgnoreOn      = @(                                      #Error message parts to set the package ignore status
       'Could not create SSL/TLS secure channel'
       'Could not establish trust relationship'
@@ -114,7 +97,9 @@ $Options = [ordered]@{
         ReleaseType = 'package'                             #Either 1 release per date, or 1 release per package
     }
 
-    RunInfo = @{
+    #RunInfo is replaced by plugins/RunInfoSafe.ps1 - the built-in uses
+    #BinaryFormatter, which is disabled in .NET 8 and removed in .NET 9.
+    RunInfoSafe = @{
         Exclude = 'password', 'apikey', 'apitoken'          #Option keys which contain those words will be removed
         Path    = "$PSScriptRoot\update_info.xml"           #Path where to save the run info
     }
