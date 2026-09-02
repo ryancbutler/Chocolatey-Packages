@@ -93,3 +93,62 @@ Describe 'Get-UrlChecksum caching' {
         Should -Invoke -ModuleName ChocoPkg Invoke-WebRequest -Times 1 -Exactly
     }
 }
+
+Describe 'Invoke-ChocoPack' {
+    BeforeEach {
+        $script:PackRoot = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
+        New-Item -ItemType Directory -Path $script:PackRoot -Force | Out-Null
+        $script:PackNuspec = Join-Path $script:PackRoot 'fslogix.nuspec'
+        Copy-Item (Join-Path $PSScriptRoot 'fixtures/sample.nuspec') $script:PackNuspec
+        $script:PackOut = Join-Path $script:PackRoot 'artifacts'
+    }
+
+    AfterEach {
+        Remove-Item -Recurse -Force $script:PackRoot -ErrorAction SilentlyContinue
+    }
+
+    It 'returns only the nupkg path when choco pack writes to stdout' {
+        # Regression: `& choco pack` left its own stdout in the success stream, so
+        # this function returned an array of (choco output + path). That array
+        # could not bind to the [string] NupkgPath parameter of Invoke-ChocoPush,
+        # failing every package with "Cannot process argument transformation on
+        # parameter 'NupkgPath'".
+        Mock -ModuleName ChocoPkg choco {
+            $outDir = $args[$args.IndexOf('--output-directory') + 1]
+            New-Item -ItemType File -Path (Join-Path $outDir 'fslogix.3.25.202.4223.nupkg') -Force | Out-Null
+            'Attempting to build package from ''fslogix.nuspec''.'
+            'Successfully created package ''fslogix.3.25.202.4223.nupkg'''
+            $global:LASTEXITCODE = 0
+        }
+
+        $result = Invoke-ChocoPack -NuspecPath $script:PackNuspec -OutputDirectory $script:PackOut
+
+        @($result).Count | Should -Be 1
+        $result | Should -BeOfType ([string])
+        $result | Should -BeExactly (Join-Path (Resolve-Path -LiteralPath $script:PackOut).ProviderPath 'fslogix.3.25.202.4223.nupkg')
+    }
+
+    It 'produces a path that binds to the Invoke-ChocoPush NupkgPath parameter' {
+        Mock -ModuleName ChocoPkg choco {
+            $outDir = $args[$args.IndexOf('--output-directory') + 1]
+            New-Item -ItemType File -Path (Join-Path $outDir 'fslogix.3.25.202.4223.nupkg') -Force | Out-Null
+            'Successfully created package'
+            $global:LASTEXITCODE = 0
+        }
+
+        $nupkg = Invoke-ChocoPack -NuspecPath $script:PackNuspec -OutputDirectory $script:PackOut
+
+        { Get-ChocoPushArgs -NupkgPath $nupkg -Source 'https://push.chocolatey.org' -ApiKey 'KEY' } |
+            Should -Not -Throw
+    }
+
+    It 'surfaces the choco output when pack fails' {
+        Mock -ModuleName ChocoPkg choco {
+            'ERROR: The nuspec file is invalid.'
+            $global:LASTEXITCODE = 1
+        }
+
+        { Invoke-ChocoPack -NuspecPath $script:PackNuspec -OutputDirectory $script:PackOut } |
+            Should -Throw -ExpectedMessage '*nuspec file is invalid*'
+    }
+}

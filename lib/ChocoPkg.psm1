@@ -181,8 +181,11 @@ function Invoke-ChocoPack {
     $resolvedOut = (Resolve-Path -LiteralPath $OutputDirectory).ProviderPath
 
     $packArgs = @('pack', $resolvedNuspec, '--output-directory', $resolvedOut, '--limit-output')
-    & choco @packArgs
-    if ($LASTEXITCODE -ne 0) { throw "choco pack failed with exit code $LASTEXITCODE" }
+    # Capture choco's own stdout instead of letting it fall through: anything left
+    # in the success stream becomes part of this function's output, which turns the
+    # returned nupkg path into an array that cannot bind to a [string] parameter.
+    $packOutput = (& choco @packArgs 2>&1 | Out-String)
+    if ($LASTEXITCODE -ne 0) { throw "choco pack failed with exit code ${LASTEXITCODE}:`n$packOutput" }
 
     $id = Get-NuspecId -Path $resolvedNuspec
     $version = Get-NuspecVersion -Path $resolvedNuspec
