@@ -1,13 +1,3 @@
-﻿if ($PSVersionTable.PSEdition -eq 'Core') {
-    $winPs = Join-Path $env:WINDIR 'System32\WindowsPowerShell\v1.0\powershell.exe'
-    if (-not (Test-Path $winPs)) {
-        throw 'Windows PowerShell 5.1 is required for this AU script, but powershell.exe was not found.'
-    }
-
-    & $winPs -NoProfile -ExecutionPolicy Bypass -File $PSCommandPath @args
-    exit $LASTEXITCODE
-}
-
 import-module au
 
 function global:au_BeforeUpdate {
