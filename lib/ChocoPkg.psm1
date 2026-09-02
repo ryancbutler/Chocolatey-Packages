@@ -109,10 +109,20 @@ function Update-PackageFile {
 
 $script:ChecksumCache = @{}
 
+# Package update scripts run as external .ps1 files invoked (directly or via
+# Invoke-WithRetry's scriptblock) from Invoke-PackageUpdate. Invoking an external
+# script inserts a new "script"-scope into the dynamic scope chain, so a plain
+# `$script:ChecksumCache` reference inside this function - called back into from
+# such a script - resolves against *that script's* empty scope, not this module's,
+# and throws under Set-StrictMode. Going through this module's own SessionState
+# explicitly sidesteps that: it is the same single hashtable for the life of the
+# process regardless of how many external-script scopes sit between the caller
+# and here, which is what keeps the fslogix/fslogix-rule cross-package cache
+# dedupe (both packages hash the same upstream zip) working correctly.
 function Clear-UrlChecksumCache {
     [CmdletBinding()]
     param()
-    $script:ChecksumCache = @{}
+    $MyInvocation.MyCommand.Module.SessionState.PSVariable.Set('ChecksumCache', @{})
 }
 
 function Get-UrlChecksum {
@@ -122,7 +132,8 @@ function Get-UrlChecksum {
         [hashtable] $WebRequestArgs = @{}
     )
 
-    if ($script:ChecksumCache.ContainsKey($Url)) { return $script:ChecksumCache[$Url] }
+    $cache = $MyInvocation.MyCommand.Module.SessionState.PSVariable.GetValue('ChecksumCache')
+    if ($cache.ContainsKey($Url)) { return $cache[$Url] }
 
     $temp = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
     try {
@@ -133,7 +144,7 @@ function Get-UrlChecksum {
         Remove-Item -LiteralPath $temp -Force -ErrorAction SilentlyContinue
     }
 
-    $script:ChecksumCache[$Url] = $hash
+    $cache[$Url] = $hash
     $hash
 }
 

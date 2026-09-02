@@ -168,5 +168,42 @@ Describe 'Package update orchestration' {
             $result.Outcome | Should -BeExactly 'failed'
             "$($result.Error)" | Should -Match 'Url'
         }
+
+        It 'succeeds when the update script calls a module function (Get-UrlChecksum) instead of returning a literal checksum' {
+            # Regression test: update.ps1 runs as an EXTERNAL SCRIPT FILE invoked from
+            # Invoke-PackageUpdate (via Invoke-WithRetry's scriptblock). That external-script
+            # invocation inserts a new "script" scope into the dynamic scope chain, so a plain
+            # `$script:` reference inside a module function called back into from that script
+            # used to resolve against the wrong scope and throw under Set-StrictMode. Every
+            # other fixture in this file hardcodes a literal Checksum and so never exercised
+            # that path - this one actually calls Get-UrlChecksum from within update.ps1.
+            Clear-UrlChecksumCache
+            Mock -ModuleName ChocoPkg Invoke-WebRequest {
+                [System.IO.File]::WriteAllText($OutFile, 'payload-for-cache-scope-regression')
+            }
+            $payloadFile = Join-Path $script:Root 'expected-payload.tmp'
+            [System.IO.File]::WriteAllText($payloadFile, 'payload-for-cache-scope-regression')
+            $expectedChecksum = (Get-FileHash -LiteralPath $payloadFile -Algorithm SHA256).Hash.ToLowerInvariant()
+
+            $updateScriptContent = @'
+[CmdletBinding()]
+param()
+[pscustomobject]@{
+    Version  = '9.9.9.9'
+    Url      = 'https://example.test/cache-scope.zip'
+    Checksum = Get-UrlChecksum -Url 'https://example.test/cache-scope.zip'
+}
+'@
+            Set-Content -LiteralPath (Join-Path $script:PkgDir 'update.ps1') -Value $updateScriptContent -Encoding utf8
+            $pkg = Get-ChocoPackage -Root $script:Root
+
+            $result = Invoke-PackageUpdate -Package $pkg -ArtifactDirectory $script:ArtifactDir -ApiKey 'KEY'
+
+            $result.Outcome | Should -BeExactly 'pushed'
+            $result.DetectedVersion | Should -BeExactly '9.9.9.9'
+            $install = [System.IO.File]::ReadAllText((Join-Path $script:PkgDir 'tools/chocolateyinstall.ps1'))
+            $install | Should -Match ([regex]::Escape("'$expectedChecksum'"))
+            Should -Invoke -ModuleName ChocoPkg Invoke-WebRequest -Times 1 -Exactly
+        }
     }
 }
